@@ -55,11 +55,64 @@ class StreamScreen(Screen):
                 if cmd:
                     def run_mpv():
                         import subprocess
-                        with self.app.suspend():
-                            subprocess.run(cmd)
-                            
+                        import tempfile
+                        import socket
+                        import json
+                        import time
+                        import os
+                        from threading import Thread
+
+                        socket_path = os.path.join(tempfile.gettempdir(), f"fanfilm_mpv_{os.getpid()}")
+                        if os.path.exists(socket_path):
+                            try: os.unlink(socket_path)
+                            except: pass
+
+                        run_cmd = list(cmd)
+                        run_cmd.append(f"--input-ipc-server={socket_path}")
+
+                        playback_state = {"percent": 0.0}
+
+                        def monitor():
+                            time.sleep(2)
+                            while os.path.exists(socket_path) or not getattr(monitor_thread, "stop", False):
+                                if not os.path.exists(socket_path):
+                                    time.sleep(1)
+                                    continue
+                                try:
+                                    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                                    s.settimeout(1.0)
+                                    s.connect(socket_path)
+                                    req = {"command": ["get_property", "percent-pos"]}
+                                    s.sendall(json.dumps(req).encode('utf-8') + b'\n')
+                                    res = s.recv(4096)
+                                    s.close()
+                                    
+                                    for line in res.decode('utf-8').split('\n'):
+                                        if line.strip():
+                                            data = json.loads(line)
+                                            if "data" in data and isinstance(data["data"], (int, float)):
+                                                playback_state["percent"] = float(data["data"])
+                                except Exception:
+                                    pass
+                                time.sleep(2)
+
+                        monitor_thread = Thread(target=monitor, daemon=True)
+                        monitor_thread.start()
+
+                        try:
+                            with self.app.suspend():
+                                subprocess.run(run_cmd)
+                        finally:
+                            monitor_thread.stop = True
+                            if os.path.exists(socket_path):
+                                try: os.unlink(socket_path)
+                                except: pass
+
+                        percent_watched = playback_state["percent"]
+                        self.app.log(f"MPV finished playback. Last watched percent: {percent_watched}%")
+
                         # Up Next logic
-                        if ffitem.ref.is_episode:
+                        if ffitem.ref.is_episode and percent_watched >= 75.0:
                             from lib.defs import MediaRef
                             from lib.ff.info import ffinfo
                             next_ep = ffitem.episode + 1

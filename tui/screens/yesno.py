@@ -9,25 +9,29 @@ class YesNoScreen(ModalScreen[bool]):
     DEFAULT_CSS = """
     YesNoScreen {
         align: center middle;
+        background: rgba(0, 0, 0, 0.4);
     }
     #dialog {
         padding: 1 2;
-        border: thick $background 80%;
-        background: $surface;
-        max-width: 60;
-        height: auto;
+        border: double $accent;
+        background: $panel;
+        width: 50;
+        height: 9;
+        align: center middle;
     }
     #question {
         text-align: center;
         width: 100%;
         margin-bottom: 1;
+        content-align: center middle;
     }
     #buttons {
         align: center middle;
         height: auto;
+        width: 100%;
     }
     Button {
-        margin: 0 1;
+        margin: 0 2;
     }
     """
 
