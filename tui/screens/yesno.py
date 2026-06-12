@@ -12,12 +12,11 @@ class YesNoScreen(ModalScreen[bool]):
         background: rgba(0, 0, 0, 0.4);
     }
     #dialog {
-        padding: 1 2;
+        padding: 1 4;
         border: double $accent;
         background: $panel;
-        width: 50;
-        height: 9;
-        align: center middle;
+        width: 70;
+        height: auto;
     }
     #question {
         text-align: center;
@@ -27,7 +26,7 @@ class YesNoScreen(ModalScreen[bool]):
     }
     #buttons {
         align: center middle;
-        height: auto;
+        height: 3;
         width: 100%;
     }
     Button {
