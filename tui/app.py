@@ -34,7 +34,7 @@ class FanFilmCommands(Provider):
 class FanFilmApp(App):
     CSS = """
     Screen { layout: vertical; }
-    Horizontal { height: 1fr; }
+    BaseScreen > Horizontal { height: 1fr; }
     #left-pane { width: 60%; border-right: tall $accent; padding: 1; overflow-y: auto; }
     #right-pane { width: 40%; padding: 1; }
     DataTable { height: 1fr; margin-top: 1; }
@@ -46,9 +46,22 @@ class FanFilmApp(App):
     #downloads-pane { padding: 1; height: 100%; }
     ProgressBar { width: 80%; margin: 1; }
     
+    SettingsScreen {
+        align: center middle;
+    }
     #settings-pane {
-        padding: 1;
+        width: 75;
         height: auto;
+        max-height: 90%;
+        border: double $accent;
+        background: $panel;
+        padding: 1 2;
+        overflow-y: auto;
+    }
+    #settings-buttons {
+        margin-top: 1;
+        height: auto;
+        align: center middle;
     }
     #settings-pane Label {
         margin-top: 1;

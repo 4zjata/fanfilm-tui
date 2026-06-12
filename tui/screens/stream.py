@@ -74,24 +74,23 @@ class StreamScreen(Screen):
 
                         def monitor():
                             time.sleep(2)
-                            while os.path.exists(socket_path) or not getattr(monitor_thread, "stop", False):
+                            while not getattr(monitor_thread, "stop", False):
                                 if not os.path.exists(socket_path):
                                     time.sleep(1)
                                     continue
                                 try:
-                                    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                                    s.settimeout(1.0)
-                                    s.connect(socket_path)
-                                    req = {"command": ["get_property", "percent-pos"]}
-                                    s.sendall(json.dumps(req).encode('utf-8') + b'\n')
-                                    res = s.recv(4096)
-                                    s.close()
-                                    
-                                    for line in res.decode('utf-8').split('\n'):
-                                        if line.strip():
-                                            data = json.loads(line)
-                                            if "data" in data and isinstance(data["data"], (int, float)):
-                                                playback_state["percent"] = float(data["data"])
+                                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                                        s.settimeout(1.0)
+                                        s.connect(socket_path)
+                                        req = {"command": ["get_property", "percent-pos"]}
+                                        s.sendall(json.dumps(req).encode('utf-8') + b'\n')
+                                        res = s.recv(4096)
+                                        
+                                        for line in res.decode('utf-8').split('\n'):
+                                            if line.strip():
+                                                data = json.loads(line)
+                                                if "data" in data and isinstance(data["data"], (int, float)):
+                                                    playback_state["percent"] = float(data["data"])
                                 except Exception:
                                     pass
                                 time.sleep(2)

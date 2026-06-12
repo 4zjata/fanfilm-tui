@@ -136,6 +136,8 @@ class Thread(_Thread, Generic[T]):
                  daemon: Optional[bool] = None,
                  on_finished: Optional[ThreadOnFinished] = None,
                  ) -> None:
+        if daemon is None:
+            daemon = True
         super().__init__(group=group, target=target, name=name, args=args, kwargs=kwargs, daemon=daemon)
         if PY < (3, 10):
             if name is None and callable(target):

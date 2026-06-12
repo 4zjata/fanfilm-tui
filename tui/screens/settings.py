@@ -1,14 +1,14 @@
 from textual.app import ComposeResult
 from textual.containers import Vertical, Horizontal
-from textual.widgets import Label, Input, Select, Button
+from textual.widgets import Label, Input, Select, Button, Footer
+from textual.screen import Screen
 
-from tui.screens.base import BaseScreen
 from lib.ff.settings import settings
 
-class SettingsScreen(BaseScreen):
+class SettingsScreen(Screen):
     BINDINGS = [("escape", "app.pop_screen", "Powrót")]
 
-    def compose_left(self) -> ComposeResult:
+    def compose(self) -> ComposeResult:
         with Vertical(id="settings-pane"):
             yield Label("Ustawienia", classes="title-label")
             
@@ -47,9 +47,10 @@ class SettingsScreen(BaseScreen):
             ]
             yield Select(theme_options, id="theme-select", allow_blank=False)
             
-            with Horizontal():
+            with Horizontal(id="settings-buttons"):
                 yield Button("Zapisz", variant="success", id="save-btn")
                 yield Button("Anuluj", variant="error", id="cancel-btn")
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         lang_val = settings.getString("providers.lang")

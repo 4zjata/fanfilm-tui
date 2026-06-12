@@ -55,6 +55,7 @@ class Thread(threading.Thread):
 
     def __init__(self, target, args: Iterable[Any] = (), kwargs: Mapping[str, Any] | None = None, *, name: str | None = None):
         super().__init__(target=target, args=args or (), kwargs=kwargs if kwargs else {}, name=name)
+        self.daemon = True
         self.stop_event = threading.Event()
         self.threads.add(self)
 
