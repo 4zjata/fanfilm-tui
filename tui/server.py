@@ -26,6 +26,10 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
                 ua = data.get('user_agent', '') or data.get('userAgent', '')
                 cookies = data.get('cookies', [])
                 
+                print(f"[TUI_SERVER] Received POST to {self.path} for host: {data.get('host')}")
+                print(f"[TUI_SERVER] Cookies names: {[c.get('name') for c in cookies]}")
+                print(f"[TUI_SERVER] UA: {ua}")
+                
                 # Find cf_clearance cookie
                 cf_cookie = next((c for c in cookies if c.get('name') == 'cf_clearance'), None)
                 
@@ -47,6 +51,7 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
                         settings.set(f"{prefix}.cookies_cf", cf_cookie.get('value', ''))
                         settings.set(f"{prefix}.cf_clearance", cf_cookie.get('value', ''))
                         settings.set(f"{prefix}.user_agent", ua)
+                        print(f"[TUI_SERVER] Successfully updated settings for prefix: {prefix}")
                         
                         if hasattr(self.server, 'app'):
                             self.server.app.call_from_thread(
@@ -54,6 +59,8 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
                                 f"Zaktualizowano ciasteczka dla {prefix}",
                                 severity="information"
                             )
+                else:
+                    print("[TUI_SERVER] Missing cf_clearance cookie or User-Agent string.")
                         
                 self.send_response(200)
                 self.send_header('Access-Control-Allow-Origin', '*')
