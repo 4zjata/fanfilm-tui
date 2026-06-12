@@ -1032,6 +1032,8 @@ class sources:
     def getMovieSource(self, title, localtitle, aliases, year, imdb, source, call: ProviderProtocol, from_cache=False, *, ffitem: FFItem):
         fflog.debug(f'getMovieSource {source=}')
 
+        advanced_mode = settings.getString("tui.advanced_mode") == "true"
+
         sources = []
         try:
             call.ffitem = ffitem  # XXX, tylko roboczo
@@ -1044,6 +1046,20 @@ class sources:
                     tmdb = ffitem.getVideoInfoTag().getUniqueID('tmdb')
                     if tmdb:
                         cache_imdb = f"tmdb:{tmdb}"
+
+                if advanced_mode:
+                    try:
+                        dbcur.execute(
+                            "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
+                            % (source, cache_imdb, "", "")
+                        )
+                        dbcur.execute(
+                            "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
+                            % (source, cache_imdb, "", "")
+                        )
+                        dbcon.commit()
+                    except Exception:
+                        pass
 
                 """ Fix to stop items passed with a 0 IMDB id pulling old unrelated sources from the database. """
                 if imdb == "0":
@@ -1074,7 +1090,7 @@ class sources:
                         dbcon.commit()
                     except Exception:
                         pass
-                if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
@@ -1096,7 +1112,7 @@ class sources:
                         pass
 
                 url = None
-                if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
@@ -1121,7 +1137,7 @@ class sources:
                             if results_cache:  # bo może być pusty
                                 url = [results_cache[k] for k in results_cache][0]
                                 fflog(f"dla {source} odczytano z cache rekordów: {len(url)}")
-                    if url is not None and not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                    if url is not None and not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
                             % (source, cache_imdb, "", "")
@@ -1166,7 +1182,7 @@ class sources:
                     if hasattr(self, 'progress_dialog') and self.progress_dialog:
                         status_msg = f"OK ({len(sources)} źródeł)" if sources else "Brak źródeł"
                         self.progress_dialog.record_status(source, status_msg)
-                    if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                    if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
                             % (source, cache_imdb, "", "")
@@ -1221,6 +1237,25 @@ class sources:
                     if tmdb:
                         cache_imdb = f"tmdb:{tmdb}"
 
+                advanced_mode = settings.getString("tui.advanced_mode") == "true"
+                if advanced_mode:
+                    try:
+                        dbcur.execute(
+                            "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
+                            % (source, cache_imdb, season, episode)
+                        )
+                        dbcur.execute(
+                            "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
+                            % (source, cache_imdb, season, episode)
+                        )
+                        dbcur.execute(
+                            "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
+                            % (source, cache_imdb, "", "")
+                        )
+                        dbcon.commit()
+                    except Exception:
+                        pass
+
                 if source in const.sources_dialog.library_cache:
                     # fix pokazania już pobranych przy włączonym cache
                     try:
@@ -1235,7 +1270,7 @@ class sources:
                         dbcon.commit()
                     except Exception:
                         pass
-                if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                     try:
                         sources = []
                         dbcur.execute(
@@ -1258,7 +1293,7 @@ class sources:
                         pass
 
                 url = None
-                if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
@@ -1286,7 +1321,7 @@ class sources:
                                 fflog(f"dla {source} odczytano z cache rekordów: {len(url)}")
                     if url is None:
                         raise Exception()
-                    if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                    if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
                             % (source, cache_imdb, "", "")
@@ -1300,7 +1335,7 @@ class sources:
                     pass
 
                 ep_url = None
-                if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
@@ -1329,7 +1364,7 @@ class sources:
                                 fflog(f"dla {source} odczytano z cache rekordów: {len(url)}")
                     if ep_url is None:
                         raise Exception()
-                    if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                    if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
                             % (source, cache_imdb, season, episode)
@@ -1372,7 +1407,7 @@ class sources:
                     if hasattr(self, 'progress_dialog') and self.progress_dialog:
                         status_msg = f"OK ({len(sources)} źródeł)" if sources else "Brak źródeł"
                         self.progress_dialog.record_status(source, status_msg)
-                    if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
+                    if not self.DEBUG_SINGLE_PROVIDER and not advanced_mode:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
                             % (source, cache_imdb, season, episode)
