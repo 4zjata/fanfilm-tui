@@ -25,7 +25,7 @@ class SeasonScreen(BaseScreen):
         try:
             from lib.ff.info import ffinfo
             from cdefs import InfoDetails
-            tv_item = ffinfo.get_item(self.tvshow.ref, details=InfoDetails.SHOW_SEASONS)
+            tv_item = ffinfo.get_item(self.tvshow.ref, details=InfoDetails.INFO_LANG | InfoDetails.SHOW_SEASONS)
             seasons = list(tv_item.season_iter()) if tv_item else []
             self.app.call_from_thread(self.show_seasons, seasons)
         except Exception as e:
