@@ -64,6 +64,11 @@ class _source(Provider):
         """Return request session."""
         if self._session is None:
             self._session = requests.Session()
+            self._session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+                'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7',
+                'DNT': '1',
+            })
             self._session.get(self.URL)  # to get session "active" (cookies)
         return self._session
 

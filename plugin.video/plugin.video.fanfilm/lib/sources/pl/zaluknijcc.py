@@ -35,14 +35,9 @@ class source:
     def __init__(self):
         self.base_link = 'https://zaluknij.cc'
         self.search_link = self.base_link + '/wyszukiwarka?phrase='
-        # Popularne User-Agenty botów do testów omijania blokad:
-        # Googlebot: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
-        # Googlebot-Video: 'Mozilla/5.0 (compatible; Googlebot-Video/1.0; +http://www.google.com/bot.html)'
-        # Bingbot: 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'
-        googlebot_ua = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
         self.headers = {
             'Referer': self.base_link + '/',
-            'user-agent': googlebot_ua,
+            'User-Agent': DEFAULT_UA,
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'accept-language': 'pl,en-US;q=0.7,en;q=0.3', }
         self.session = requests.Session()

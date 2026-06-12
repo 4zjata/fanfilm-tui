@@ -18,24 +18,38 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        if self.path == '/cookie':
+        if self.path in ('/cookie', '/cookies'):
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             try:
                 data = json.loads(post_data.decode('utf-8'))
-                ua = data.get('userAgent', '')
+                ua = data.get('user_agent', '') or data.get('userAgent', '')
                 cookies = data.get('cookies', [])
                 
                 # Find cf_clearance cookie
                 cf_cookie = next((c for c in cookies if c.get('name') == 'cf_clearance'), None)
                 
                 if cf_cookie and ua:
-                    # Update settings
-                    settings.set("vidlink.cf_clearance", cf_cookie.get('value', ''))
-                    settings.set("vidlink.user_agent", ua)
+                    host_lower = data.get('host', '').lower()
+                    prefix = None
+                    if 'cda-hd' in host_lower:
+                        prefix = 'cdahd'
+                    elif 'zaluknij' in host_lower:
+                        prefix = 'zaluknij'
+                    elif any(domain in host_lower for domain in ('vidlink', 'storm', 'megacloud')):
+                        prefix = 'vidlink'
                     
-                    if hasattr(self.server, 'app'):
-                        self.server.app.call_from_thread(self.server.app.notify, "Otrzymano i zaktualizowano ciasteczka Cloudflare", severity="information")
+                    if prefix:
+                        settings.set(f"{prefix}.cookies_cf", cf_cookie.get('value', ''))
+                        settings.set(f"{prefix}.cf_clearance", cf_cookie.get('value', ''))
+                        settings.set(f"{prefix}.user_agent", ua)
+                        
+                        if hasattr(self.server, 'app'):
+                            self.server.app.call_from_thread(
+                                self.server.app.notify,
+                                f"Zaktualizowano ciasteczka dla {prefix}",
+                                severity="information"
+                            )
                         
                 self.send_response(200)
                 self.send_header('Access-Control-Allow-Origin', '*')
