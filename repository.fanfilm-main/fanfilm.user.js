@@ -4,13 +4,20 @@
 // @version      0.1.20260530.0
 // @description  Web service
 // @author       kpl-team
-// @match        http*://cda-hd.cc/*
-// @match        http*://zaluknij.cc/*
-// @match        http*://vidlink.pro/*
-// @match        http*://storm.vodvidl.site/*
-// @match        http*://megacloud.live/*
-// @match        http*://obejrzyj.to/*
-// @match        http*://filmyonline.cc/*
+// @match        *://cda-hd.cc/*
+// @match        *://*.cda-hd.cc/*
+// @match        *://zaluknij.cc/*
+// @match        *://*.zaluknij.cc/*
+// @match        *://vidlink.pro/*
+// @match        *://*.vidlink.pro/*
+// @match        *://storm.vodvidl.site/*
+// @match        *://*.storm.vodvidl.site/*
+// @match        *://megacloud.live/*
+// @match        *://*.megacloud.live/*
+// @match        *://obejrzyj.to/*
+// @match        *://*.obejrzyj.to/*
+// @match        *://filmyonline.cc/*
+// @match        *://*.filmyonline.cc/*
 // @include      http*://ekino*.*/*
 // @include      http*://net*.cc/*
 // @icon         https://raw.githubusercontent.com/fanfilm-pl/repository.fanfilm/refs/heads/main/favicon.png
