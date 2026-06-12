@@ -63,7 +63,7 @@ class StreamScreen(Screen):
                             from lib.defs import MediaRef
                             from lib.ff.info import ffinfo
                             next_ep = ffitem.episode + 1
-                            next_ref = MediaRef.episode(ffitem.ref.tv_id, ffitem.season, next_ep)
+                            next_ref = MediaRef.tvshow(ffitem.ref.ffid, ffitem.season, next_ep)
                             next_item = ffinfo.get_item(next_ref)
                             if next_item:
                                 def handle_yesno(result):
