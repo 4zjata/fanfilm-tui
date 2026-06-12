@@ -36,6 +36,10 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
                         prefix = 'cdahd'
                     elif 'zaluknij' in host_lower:
                         prefix = 'zaluknij'
+                    elif 'obejrzyj' in host_lower:
+                        prefix = 'obejrzyj'
+                    elif 'filmyonline' in host_lower:
+                        prefix = 'filmyonline'
                     elif any(domain in host_lower for domain in ('vidlink', 'storm', 'megacloud')):
                         prefix = 'vidlink'
                     

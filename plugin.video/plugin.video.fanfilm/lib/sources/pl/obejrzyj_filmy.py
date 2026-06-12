@@ -15,8 +15,9 @@ import json
 from json import JSONDecodeError
 from base64 import b64encode
 from lib.ff import requests
+from lib.ff.settings import settings
 from lib.ff.log_utils import fflog, fflog_exc
-from lib.ff.source_utils import sources_with_links
+from lib.ff.source_utils import sources_with_links, setting_cookie, DEFAULT_UA
 from lib.sources import Provider
 if TYPE_CHECKING:
     from lib.ff.item import FFItem
@@ -38,6 +39,7 @@ class _source(Provider):
 
     # --- internal ---
     PROVIDER: ClassVar[str]
+    SETTING_PREFIX: ClassVar[str]
     URL: ClassVar[str]
     HAS_TMDB_SUPPORT: ClassVar[bool] = True
 
@@ -64,23 +66,41 @@ class _source(Provider):
         """Return request session."""
         if self._session is None:
             self._session = requests.Session()
+            ua = settings.getString(f"{self.SETTING_PREFIX}.user_agent").strip(' "\'')
+            if not ua:
+                ua = DEFAULT_UA
             self._session.headers.update({
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+                'User-Agent': ua,
                 'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7',
                 'DNT': '1',
             })
-            self._session.get(self.URL)  # to get session "active" (cookies)
+            cookies_cf = setting_cookie(setting_name=f"{self.SETTING_PREFIX}.cookies_cf", cookie_name="cf_clearance")
+            cookiesD = {'cf_clearance': cookies_cf} if cookies_cf else {}
+            try:
+                self._session.get(self.URL, cookies=cookiesD, timeout=10)
+            except Exception as e:
+                fflog(f"[{self.PROVIDER.upper()}] failed to initialize session on {self.URL}: {e}")
         return self._session
 
     def request(self, url: str) -> JsonData:
         """Site get request."""
-        resp = self.session.get(url, headers={
-            'accept': 'application/json',
-            'referer': self.URL,
-        })
+        cookies_cf = setting_cookie(setting_name=f"{self.SETTING_PREFIX}.cookies_cf", cookie_name="cf_clearance")
+        cookiesD = {'cf_clearance': cookies_cf} if cookies_cf else {}
+        try:
+            resp = self.session.get(url, headers={
+                'accept': 'application/json',
+                'referer': self.URL,
+            }, cookies=cookiesD, timeout=10)
+        except Exception as e:
+            fflog(f"[{self.PROVIDER.upper()}] request failed for {url}: {e}")
+            return {}
         fflog.debug(f'[{self.PROVIDER.upper()}] request: {url} -> {resp.status_code}')
         if resp.status_code == 200:
-            return resp.json()
+            try:
+                return resp.json()
+            except JSONDecodeError as e:
+                fflog(f"[{self.PROVIDER.upper()}] JSON decode error: {e}")
+                return {}
         return {}
 
     def make_id(self, tid: Union[int, str],
@@ -180,7 +200,9 @@ class _source(Provider):
         except JSONDecodeError:
             fflog(f'[{self.PROVIDER.upper()}] JSON error for query={query!r}')
             return []
-        raw = data['results']
+        raw = data.get('results') if isinstance(data, dict) else None
+        if not raw:
+            return []
         fflog(f'search: {len(raw)} results')
         if tmdb:
             tmdb = int(tmdb)
@@ -206,7 +228,8 @@ class _source(Provider):
                     media_id = self.make_id(meta_id, type=mtype, service=meta_service)
                     try:
                         if data := self.request(f'{self.URL}api/v1/titles/{media_id}?loader=titlePage'):
-                            return data['title']
+                            if 'title' in data:
+                                return data['title']
                     except JSONDecodeError:
                         fflog(f'[{self.PROVIDER.upper()}] JSON error for {self.ffitem} id={media_id!r}')
                         break
@@ -221,7 +244,8 @@ class _source(Provider):
                 media_id = media_data['id']
                 try:
                     if data := self.request(f'{self.URL}api/v1/titles/{media_id}?loader=titlePage'):
-                        return data['title']
+                        if 'title' in data:
+                            return data['title']
                 except JSONDecodeError:
                     pass
         # not found
@@ -272,6 +296,7 @@ class _source(Provider):
 class ObejrzyjTo(_source):
     """Scraper for obejrzyj.to."""
     PROVIDER: ClassVar[str] = 'obejrzyjto'
+    SETTING_PREFIX: ClassVar[str] = 'obejrzyj'
     URL: ClassVar[str] = 'https://obejrzyj.to/'
 
     # def source_name(self, item: JsonData) -> str:
@@ -284,6 +309,7 @@ class ObejrzyjTo(_source):
 class FilmyOnlineCc(_source):
     """Scraper for filmyonline.cc."""
     PROVIDER: ClassVar[str] = 'filmyonline'
+    SETTING_PREFIX: ClassVar[str] = 'filmyonline'
     URL: ClassVar[str] = 'https://filmyonline.cc/'
     HAS_TMDB_SUPPORT: ClassVar[bool] = False
 
@@ -293,6 +319,7 @@ class FilmyOnlineCc(_source):
 class PremiumsmartEu(_source):
     """Scraper for premiumsmart.eu."""
     PROVIDER: ClassVar[str] = 'premiumsmart'
+    SETTING_PREFIX: ClassVar[str] = 'premiumsmart'
     URL: ClassVar[str] = 'https://premiumsmart.eu/'
 
     def __init__(self) -> None:
@@ -317,7 +344,9 @@ class PremiumsmartEu(_source):
             })
 
             # Fetch the home page to get cookies and CSRF token
-            resp = self._session.get(self.URL)
+            cookies_cf = setting_cookie(setting_name=f"{self.SETTING_PREFIX}.cookies_cf", cookie_name="cf_clearance")
+            cookiesD = {'cf_clearance': cookies_cf} if cookies_cf else {}
+            resp = self._session.get(self.URL, cookies=cookiesD)
             if resp.status_code == 200:
                 # Extract CSRF token from bootstrapData
                 match = re.search(r'window\.bootstrapData\s*=\s*({.*});', resp.text, re.S)
@@ -362,7 +391,10 @@ class PremiumsmartEu(_source):
             # The token might not be found on the initial page load.
             fflog(f'[{self.PROVIDER.upper()}] no CSRF token after session init: {url}')
 
-        resp = session.get(url, headers=headers)
+        cookies_cf = setting_cookie(setting_name=f"{self.SETTING_PREFIX}.cookies_cf", cookie_name="cf_clearance")
+        cookiesD = {'cf_clearance': cookies_cf} if cookies_cf else {}
+
+        resp = session.get(url, headers=headers, cookies=cookiesD)
         fflog.debug(f'[{self.PROVIDER.upper()}] request: {url} -> {resp.status_code}')
 
         if resp.status_code == 200:

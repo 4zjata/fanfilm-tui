@@ -1199,6 +1199,36 @@
                     <default>true</default>
                     <control type="toggle"/>
                 </setting>
+                <!-- L[label](30459, 'CF Cookie') -->
+                <setting id="filmyonline.cookies_cf" label="30459" help="" type="string" parent="provider.filmyonline">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.filmyonline">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="filmyonline.user_agent" label="30353" help="" type="string" parent="provider.filmyonline">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.filmyonline">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
+                </setting>
                 <!-- L[label](30610, 'KinoSwiat VOD (YouTube)') -->
                 <setting id="provider.kinoswiatvod" label="30610" type="boolean" help="">
                     <level>0</level>
@@ -1216,6 +1246,36 @@
                     <level>0</level>
                     <default>true</default>
                     <control type="toggle"/>
+                </setting>
+                <!-- L[label](30459, 'CF Cookie') -->
+                <setting id="obejrzyj.cookies_cf" label="30459" help="" type="string" parent="provider.obejrzyjto">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.obejrzyjto">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="obejrzyj.user_agent" label="30353" help="" type="string" parent="provider.obejrzyjto">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.obejrzyjto">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
                 </setting>
                 <!-- L[label](30506, 'Premiumsmart') -->
                 <setting id="provider.premiumsmart" label="30506" help="" type="boolean">

@@ -1533,6 +1533,14 @@ const.tune.service.web_server.cookies = {
         'cf_clearance': 'zaluknij.cookies_cf',
         ':user_agent': 'zaluknij.user_agent',
     },
+    'obejrzyj.to': {
+        'cf_clearance': 'obejrzyj.cookies_cf',
+        ':user_agent': 'obejrzyj.user_agent',
+    },
+    'filmyonline.cc': {
+        'cf_clearance': 'filmyonline.cookies_cf',
+        ':user_agent': 'filmyonline.user_agent',
+    },
     'vidlink.pro': {
         'cf_clearance': 'vidlink.cookies_cf',
         ':user_agent': 'vidlink.user_agent',

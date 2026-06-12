@@ -9,6 +9,8 @@
 // @match        http*://vidlink.pro/*
 // @match        http*://storm.vodvidl.site/*
 // @match        http*://megacloud.live/*
+// @match        http*://obejrzyj.to/*
+// @match        http*://filmyonline.cc/*
 // @include      http*://ekino*.*/*
 // @include      http*://net*.cc/*
 // @icon         https://raw.githubusercontent.com/fanfilm-pl/repository.fanfilm/refs/heads/main/favicon.png
