@@ -16,7 +16,7 @@ class YesNoScreen(ModalScreen[bool]):
         border: double $accent;
         background: $panel;
         width: 70;
-        height: auto;
+        height: 11;
     }
     #question {
         text-align: center;
