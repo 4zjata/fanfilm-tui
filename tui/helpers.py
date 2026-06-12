@@ -105,6 +105,8 @@ def play_in_mpv(resolved_url, title=""):
             headers = {}
             
         url = resolved_url.split("|")[0]
+        if url.startswith("isa+"):
+            url = url[4:]
         
         cmd = ["mpv"]
         for k, v in headers.items():
