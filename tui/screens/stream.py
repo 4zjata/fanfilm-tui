@@ -1,0 +1,95 @@
+import sys
+from textual import work
+from textual.app import ComposeResult
+from textual.containers import Vertical
+from textual.screen import Screen
+from textual.widgets import Label, ProgressBar
+
+from tui.helpers import play_in_mpv
+
+class StreamScreen(Screen):
+    def __init__(self, source):
+        super().__init__()
+        self.source = source
+        self.progress_timer = None
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="scraping-pane"):
+            yield Label("Rozwiązywanie linku...", id="stream-status")
+            yield ProgressBar(total=100, id="stream-bar")
+
+    def on_mount(self) -> None:
+        self.query_one(ProgressBar).progress = 5
+        self.progress_timer = self.set_interval(0.2, self.tick_progress)
+        self.start_streaming()
+
+    def tick_progress(self):
+        bar = self.query_one(ProgressBar)
+        if bar.progress < 95:
+            bar.progress += 1
+
+    @work(thread=True)
+    def start_streaming(self):
+        try:
+            import shutil
+            if not shutil.which("mpv"):
+                self.app.call_from_thread(self.notify, "Brak odtwarzacza 'mpv' w systemie. Zainstaluj go, aby korzystać ze streamingu.", severity="error")
+                self.app.call_from_thread(self.app.pop_screen)
+                return
+
+            from lib.ff.sources import sources
+            self.app.call_from_thread(self.update_status, "Rozwiązywanie linku do streamingu...")
+            sf = sources()
+            sf.getConstants(ffitem=self.source.ffitem)
+            resolved = sf.resolve_source(self.source)
+            if self.progress_timer:
+                self.progress_timer.stop()
+            if resolved:
+                self.app.call_from_thread(self.update_status, "Uruchamianie odtwarzacza MPV...")
+                ffitem = self.source.ffitem
+                if ffitem.ref.is_episode:
+                    title = f"{ffitem.vtag.getTvShowTitle() or ffitem.title} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                else:
+                    title = f"{ffitem.title} ({ffitem.year})"
+                cmd = play_in_mpv(resolved, title)
+                if cmd:
+                    def run_mpv():
+                        import subprocess
+                        with self.app.suspend():
+                            subprocess.run(cmd)
+                            
+                        # Up Next logic
+                        if ffitem.ref.is_episode:
+                            from lib.defs import MediaRef
+                            from lib.ff.info import ffinfo
+                            next_ep = ffitem.episode + 1
+                            next_ref = MediaRef.episode(ffitem.ref.tv_id, ffitem.season, next_ep)
+                            next_item = ffinfo.get_item(next_ref)
+                            if next_item:
+                                def handle_yesno(result):
+                                    if result:
+                                        from tui.screens.scraping import ScrapingScreen
+                                        self.app.switch_screen(ScrapingScreen([next_item]))
+                                    else:
+                                        self.app.pop_screen()
+                                        
+                                from tui.screens.yesno import YesNoScreen
+                                title = next_item.vtag.getTvShowTitle() or next_item.title
+                                self.app.push_screen(YesNoScreen(f"Odtworzyć następny odcinek?\n{title} S{next_item.season:02d}E{next_item.episode:02d}"), handle_yesno)
+                            else:
+                                self.app.pop_screen()
+                        else:
+                            self.app.pop_screen()
+
+                    self.app.call_from_thread(run_mpv)
+            else:
+                self.app.call_from_thread(self.notify, "Nie udało się rozwiązać linku.", severity="error")
+                self.app.call_from_thread(self.app.pop_screen)
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.notify, f"Błąd podczas uruchamiania streamingu: {e}", severity="error")
+            self.app.call_from_thread(self.app.pop_screen)
+
+    def update_status(self, text):
+        self.query_one("#stream-status", Label).update(text)

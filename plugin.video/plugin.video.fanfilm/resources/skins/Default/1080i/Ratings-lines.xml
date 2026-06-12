@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns:ff="ff" xmlns:gui="gui" type="dialog" modality="modal">
+
+  <ff:defines>
+    <ff:vars>
+      # Settings
+      WIDTH = 1100        # dialog width
+      MARGIN = 10
+      STAR_SIZE = 24     # star icon size
+      STAR_GAP = 1       # gap between stars when multiple on same rating level
+      STAR_LINE_HEIGHT = 32  # height of one star line
+      BUTTON_WIDTH = 70  # rating button width
+      BUTTON_GAP = 10     # gap between rating buttons
+      SERVICE_LINE_HEIGHT = 45  # height of one service info line
+      # Ratings by service name
+      ratings_by_name = {rat.service.name: rat for rat in ratings}
+      # Total width of button box.
+      button_box_width = BUTTON_WIDTH * len(RATING_RANGE) + BUTTON_GAP * (len(RATING_RANGE) - 1)
+      # DX step between buttons.
+      button_box_dx = BUTTON_WIDTH + BUTTON_GAP
+      # Left position of first button.
+      button_box_left = (WIDTH - button_box_width) / 2
+      # X0 position of first rating value (on the right).
+      rating_value_x0 = button_box_left + button_box_width
+  </ff:vars>
+
+    <macro name="rating_button">
+      <param name="n"/>
+      <param name="N" value="10"/>
+      <param name="id" value="{40 + n}"/>
+      <param name="left" value="{80 * (n - 1) + (1100 - 70 * (N - 1) - 10 * (N - 2)) / 2}"/>
+      <param name="onright" value="{40 + n + 1}"/>
+      <param name="onleft" value="{40 + n - 1}"/>
+      <param name="ondown" value="51"/>
+      <control type="button" id="{id}">
+        <!-- <left>{left}</left> -->
+        <centerleft>{left} </centerleft>
+        <centertop>50%</centertop>
+        <left/>
+        <right/>
+        <top/>
+        <bottom/>
+        <width>70</width>
+        <height>60</height>
+        <align>center</align>
+        <aligny>center</aligny>
+        <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+        <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+        <colordiffuse/>
+        <textwidth>60</textwidth>
+        <textcolor>B3FFFFFF</textcolor>
+        <focusedcolor>ffffffff</focusedcolor>
+        <font ff:style="normal">font13</font>
+        <!-- :translate=false: -->
+        <label>&#x200b;{n}</label>  <!-- zero-width space (200b) to avoid KODI localization -->
+        <onright>{onright}</onright>
+        <onleft>{onleft}</onleft>
+        <ondown>{ondown}</ondown>
+      </control>
+    </macro>
+
+    <macro name="rating_button_box">
+      <!-- Rate buttons 1..10 -->
+      <control type="group">
+        <height>85</height>
+        <ff:macro macro="rating_button" n="1" onleft="50"/>
+        <ff:macro macro="rating_button" n="2"/>
+        <ff:macro macro="rating_button" n="3"/>
+        <ff:macro macro="rating_button" n="4"/>
+        <ff:macro macro="rating_button" n="5"/>
+        <ff:macro macro="rating_button" n="6"/>
+        <ff:macro macro="rating_button" n="7"/>
+        <ff:macro macro="rating_button" n="8"/>
+        <ff:macro macro="rating_button" n="9"/>
+        <ff:macro macro="rating_button" n="10" onright="41"/>
+      </control>
+    </macro>
+
+    <macro name="button">
+      <param name="id"/>
+      <param name="label"/>
+      <control type="button" id="{id}">
+        <width>250</width>
+        <height>55</height>
+        <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+        <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+        <colordiffuse/>
+        <align>center</align>
+        <aligny>center</aligny>
+        <font ff:style="normal">font13</font>
+        <textwidth>230</textwidth>
+        <textcolor>B3FFFFFF</textcolor>
+        <focusedcolor>ffffffff</focusedcolor>
+        <!-- :translate=false: -->
+        <label>{label}</label>
+        <onup>45</onup>
+      </control>
+    </macro>
+
+  </ff:defines>
+
+  <coordinates>
+    <top>0</top>
+    <left>0</left>
+    <width>1920</width>
+    <height>1080</height>
+  </coordinates>
+
+  <controls>
+    <!-- background -->
+    <control type="image">
+      <top/>
+      <left/>
+      <width>1920</width>
+      <height>1080</height>
+      <texture border="10" colordiffuse="BF000000">white.png</texture>
+    </control>
+
+    <!-- DIALOG BOX -->
+    <control type="group">
+      <!-- <ff:set var="WIDTH" value="800"/> -->
+      <centertop>50%</centertop>
+      <centerleft>50%</centerleft>
+      <top/>
+      <bottom/>
+      <left/>
+      <right/>
+      <width>{WIDTH}</width>
+      <height>{340 + SERVICE_LINE_HEIGHT * len(services)}</height>
+
+      <control type="image">
+        <colordiffuse>D9202E39</colordiffuse>
+        <texture border="20">dialogs/rounded.png</texture>
+      </control>
+
+      <control type="image">
+        <colordiffuse>D9141519</colordiffuse>
+        <texture border="20">dialogs/rounded.png</texture>
+        <bordersize>4</bordersize>
+      </control>
+
+      <!-- DIALOG CONTENT -->
+      <control type="group">
+        <centertop>50%</centertop>
+        <centerleft>50%</centerleft>
+        <top/>
+        <bottom/>
+        <left/>
+        <right/>
+
+        <!--- HEADER BAR -->
+        <control type="group">
+          <height>110</height>
+
+          <!-- TITLE -->
+          <control type="label" id="10">
+            <left>30</left>
+            <right>30</right>
+            <top>10</top>
+            <height>40</height>
+            <align>center</align>
+            <textcolor>BFFFFFFF</textcolor>
+            <font ff:style="heading">font40_title</font>
+            <!-- :translate=false: -->
+            <label>$INFO[Window.Property(title)]</label>
+          </control>
+
+          <!-- SUBTITLE (movie/episode title + season/episode) -->
+          <control type="label">
+            <left>30</left>
+            <right>30</right>
+            <top>55</top>
+            <height>35</height>
+            <align>center</align>
+            <textcolor>B3FFFFFF</textcolor>
+            <font ff:style="normal">font13</font>
+            <!-- :translate=false: -->
+            <label>$INFO[Window.Property(media.title)]</label>
+          </control>
+
+          <!-- Separator -->
+          <control type="image">
+            <colordiffuse>D9202E39</colordiffuse>
+            <texture>white.png</texture>
+            <top>100</top>
+            <height>2</height>
+            <left>25</left>
+            <right>25</right>
+            <width/>
+            <centerleft>50%</centerleft>
+          </control>
+
+          <!--- HEADER BAR END -->
+        </control>
+
+        <!-- MAiN CONTENT -->
+        <control type="grouplist">
+          <orientation>vertical</orientation>
+          <centerleft>50%</centerleft>
+          <top>120</top>
+          <bottom>80</bottom>
+          <left/>
+          <right/>
+
+
+          <ff:for var="srv" in="services.values()">
+            <ff:vars>
+                x0 = button_box_left - button_box_dx + BUTTON_WIDTH / 2
+            </ff:vars>
+            <control type="group">
+              <height>{SERVICE_LINE_HEIGHT}</height>
+
+              <control type="label">
+                <height>{SERVICE_LINE_HEIGHT}</height>
+                <left>30</left>
+                <right>30</right>
+                <align>left</align>
+                <textcolor>B3FFFFFF</textcolor>
+                <font ff:style="normal">font13</font>
+                <!-- :translate=false: -->
+                <label>{srv.title}</label>
+              </control>
+
+              <!-- <ff:for var="n" in="RATING_RANGE"> -->
+              <!--   <control type="label"> -->
+              <!--     <left>{x0 + n * button_box_dx}</left> -->
+              <!--     <align>left</align> -->
+              <!--     <textcolor>B3FFFFFF</textcolor> -->
+              <!--     <font ff:style="normal">font13</font> -->
+              <!--     <label>.</label> -->
+              <!--   </control> -->
+              <!-- </ff:for> -->
+
+              <!-- <ff:set var="rating" value="ratings_by_name.get(srv.name)"/> -->
+              <ff:vars>
+                  rating = ratings_by_name.get(srv.name)
+              </ff:vars>
+
+              <control type="image">
+                <top/>
+                <colordiffuse>{srv.color}</colordiffuse>
+                <texture>rating-line.png</texture>
+                <!-- <texture border="10" colordiffuse="BF000000">white.png</texture> -->
+                <height>5</height>
+                <left>{button_box_left + BUTTON_WIDTH / 2}</left>
+                <width>{button_box_width - BUTTON_WIDTH}</width>
+                <centertop>55%</centertop>
+              </control>
+
+              <ff:if if="rating">
+                <control type="image">
+                  <left/>
+                  <top/>
+                  <centerleft>{x0 + rating.rating * button_box_dx}</centerleft>
+                  <centertop>50%</centertop>
+                  <width>24</width>
+                  <height>24</height>
+                  <texture>icons/star.32.png</texture>
+                  <colordiffuse>{srv.color}</colordiffuse>
+                </control>
+
+                <control type="label">
+                  <height>{SERVICE_LINE_HEIGHT}</height>
+                  <left>{rating_value_x0 + 5}</left>
+                  <width>40</width>
+                  <align>right</align>
+                  <aligny>center</aligny>
+                  <textcolor>B3FFFFFF</textcolor>
+                  <font ff:style="normal">font13</font>
+                  <!-- :translate=false: -->
+                  <label>&#x200b;{rating.rating}</label>
+                </control>
+                <ff:if if="const.dialog.ratings.show_raw_rating">
+                  <control type="label">
+                    <height>{SERVICE_LINE_HEIGHT}</height>
+                    <left>{rating_value_x0 + 55}</left>
+                    <width>80</width>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textoffsety>5</textoffsety>  <!-- manulal vertical align, why ??? -->
+                    <textcolor>B3FFFFFF</textcolor>
+                    <font ff:style="small">font13</font>
+                    <!-- :translate=false: -->
+                    <label>({rating.raw_rating})</label>
+                  </control>
+                </ff:if>
+              </ff:if>
+
+            </control>
+          </ff:for>
+
+          <!-- space -->
+          <control type="group">
+            <height>15</height>
+          </control>
+          <!-- rating buttons -->
+          <ff:macro macro="rating_button_box"/>
+
+
+          <!-- MAIN CONTENT END -->
+        </control>
+
+        <!-- BOTTOM BUTTONS -->
+        <control type="grouplist">
+          <centerleft>50%</centerleft>
+          <left/>
+          <top/>
+          <bottom>20</bottom>
+          <width>520</width>
+          <height>60</height>
+          <orientation>horizontal</orientation>
+          <itemgap>20</itemgap>
+          <align>center</align>
+
+          <!-- REMOVE RATING BUTTON -->
+          <ff:macro macro="button" id="52" label="{L(30351, 'Remove rating')}"/>
+
+          <!-- CANCEL BUTTON -->
+          <ff:macro macro="button" id="51" label="$LOCALIZE[222]"/>
+        </control>
+
+      </control>
+    </control>
+  </controls>
+</window>

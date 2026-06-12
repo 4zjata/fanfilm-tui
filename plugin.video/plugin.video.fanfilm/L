@@ -1,0 +1,8 @@
+#!/bin/bash
+
+grep -A1 "$1" resources/language/resource.language.en_gb/strings.po | {
+	read _
+	read _ msg
+	echo "L($1, '${msg:1:-1}')"
+}
+

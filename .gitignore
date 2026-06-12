@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+fanfilm_tui.log
+download/
+downloads_test/
+*.db
+.idea/
+.vscode/
+*.svg
+*.png
+scratch/

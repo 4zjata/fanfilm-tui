@@ -1,0 +1,3412 @@
+<settings version="1">
+    <section id="plugin.video.fanfilm">
+        <!-- Ogolne -->
+        <!-- L[label](32310, 'General') -->
+        <category id="general" label="32310" help="">
+            <!-- Ogolne -->
+            <!-- L[label](32310, 'General') -->
+            <group id="1" label="32310">
+                <!-- L[label](32331, 'Default action') -->
+                <setting id="hosts.mode" type="integer" label="32331" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32332, 'Dialog') -->
+                            <option label="32332">0</option> <!-- okno -->
+                            <!-- L[label](32334, 'Auto Play') -->
+                            <option label="32334">2</option> <!-- auto -->
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <!-- L(32331, 'Default action') -->
+                        <heading>32331</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32668, 'Automatically select the next items from the playback list') -->
+                <setting id="auto.select.next.item.to.play" type="boolean" label="32668" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30268, 'Run FanFilm on Kodi startup') -->
+                <setting id="ff.autostart" type="boolean" label="30268" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30326, 'Use InputStream Adaptive to play m3u8 links') -->
+                <setting id="isa.enabled" type="boolean" label="30326" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30510, 'Show anime category in main menu') -->
+                <setting id="anime_folder" type="boolean" label="30510" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30535, 'Show next page item in widgets') -->
+                <setting id="widgets_nextpage" type="boolean" label="30535" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30556, 'Get user ratings') -->
+                <setting id="get_user_ratings" type="boolean" label="30556" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Menu kontekstowe -->
+            <!-- L[label](30176, 'Enable/disable context menu items') -->
+            <group id="2" label="30176">
+                <!-- L[label](30228, 'Details') -->
+                <setting id="cm.details" type="boolean" label="30228" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30233, 'Custom search') -->
+                <setting id="cm.custom_search" type="boolean" label="30233" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30130, 'Movie Collection') -->
+                <setting id="cm.movie_collection" type="boolean" label="30130" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30132, 'Similar') -->
+                <setting id="cm.similar" type="boolean" label="30132" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30335, 'Set rating') -->
+                <setting id="cm.rate" type="boolean" label="30335" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="enable">
+                            <or>
+                                <condition setting="trakt.rating">true</condition>
+                                <condition setting="tmdb.rating">true</condition>
+                                <condition setting="mdblist.rating">true</condition>
+                            </or>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Akcje po obejrzeniu -->
+            <!-- L[label](30336, 'After watching') -->
+            <group id="3" label="30336">
+                <!-- L[label](30338, 'Rate movie') -->
+                <setting id="rate_after_watch.movie" type="boolean" label="30338" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable">
+                            <or>
+                                <condition setting="trakt.rating">true</condition>
+                                <condition setting="tmdb.rating">true</condition>
+                                <condition setting="mdblist.rating">true</condition>
+                            </or>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30339, 'Rate episode') -->
+                <setting id="rate_after_watch.show" type="boolean" label="30339" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable">
+                            <or>
+                                <condition setting="trakt.rating">true</condition>
+                                <condition setting="tmdb.rating">true</condition>
+                                <condition setting="mdblist.rating">true</condition>
+                            </or>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Up Next -->
+            <!-- L[label](30532, 'Up Next') -->
+            <group id="4" label="30532">
+                <!-- L[label](30621, 'Install Up Next add-on') -->
+                <setting id="upnext.install" type="action" label="30621">
+                    <level>0</level>
+                    <data>InstallAddon(service.upnext)</data>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition on="property" operator="!is" name="InfoBool">System.HasAddon(service.upnext)</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](30622, 'Enable Up Next integration') -->
+                <setting id="upnext.enabled" type="boolean" label="30622" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition on="property" name="InfoBool">System.HasAddon(service.upnext)</condition>
+                        </dependency>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">System.AddonIsEnabled(service.upnext)</condition>
+                        </dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30623, 'Open Up Next add-on settings') -->
+                <setting id="upnext.settings" type="action" label="30623">
+                    <level>0</level>
+                    <data>Addon.OpenSettings(service.upnext)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition on="property" name="InfoBool">System.HasAddon(service.upnext)</condition>
+                        </dependency>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">System.AddonIsEnabled(service.upnext)</condition>
+                        </dependency>
+                    </dependencies>
+                </setting>
+            </group>
+        </category>
+        <!-- Filmy i seriale -->
+        <!-- L[label](32672, 'Movies and TV Series') -->
+        <category id="moviesandshows" label="32672" help="">
+            <!-- Ogolne -->
+            <!-- L[label](32672, 'Movies and TV Series') -->
+            <group id="1" label="32672">
+                <!-- L[label](32316, 'Info Language') -->
+                <setting id="api.language" type="string" label="32316" help="">
+                    <level>0</level>
+                    <default>pl-PL</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32673, 'AUTO') -->
+                            <option label="32673">AUTO</option>
+                            <!-- L[label](32674, 'Bulgarian') -->
+                            <option label="32674">bg-BG</option>
+                            <!-- L[label](32675, 'Chinese') -->
+                            <option label="32675">zh-CN</option>
+                            <!-- L[label](32676, 'Croatian') -->
+                            <option label="32676">hr-HR</option>
+                            <!-- L[label](32677, 'Czech') -->
+                            <option label="32677">cs-CZ</option>
+                            <!-- L[label](32678, 'Danish') -->
+                            <option label="32678">da-DK</option>
+                            <!-- L[label](32679, 'Dutch') -->
+                            <option label="32679">nl-NL</option>
+                            <!-- L[label](32680, 'English') -->
+                            <option label="32680">en-US</option>
+                            <!-- L[label](32681, 'Finnish') -->
+                            <option label="32681">fi-FI</option>
+                            <!-- L[label](32682, 'French') -->
+                            <option label="32682">fr-FR</option>
+                            <!-- L[label](32683, 'German') -->
+                            <option label="32683">de-DE</option>
+                            <!-- L[label](32684, 'Greek') -->
+                            <option label="32684">gr-GR</option>
+                            <!-- L[label](32685, 'Hebrew') -->
+                            <option label="32685">he-IL</option>
+                            <!-- L[label](32686, 'Hungarian') -->
+                            <option label="32686">hu-HU</option>
+                            <!-- L[label](32687, 'Italian') -->
+                            <option label="32687">it-IT</option>
+                            <!-- L[label](32688, 'Japanese') -->
+                            <option label="32688">ja-JP</option>
+                            <!-- L[label](32689, 'Korean') -->
+                            <option label="32689">ko-KR</option>
+                            <!-- L[label](32690, 'Norwegian') -->
+                            <option label="32690">nn-NO</option>
+                            <!-- L[label](32691, 'Polish') -->
+                            <option label="32691">pl-PL</option>
+                            <!-- L[label](32692, 'Portuguese') -->
+                            <option label="32692">pt-PT</option>
+                            <!-- L[label](32693, 'Romanian') -->
+                            <option label="32693">ro-RO</option>
+                            <!-- L[label](32694, 'Russian') -->
+                            <option label="32694">ru-RU</option>
+                            <!-- L[label](32695, 'Serbian') -->
+                            <option label="32695">sr-RS</option>
+                            <!-- L[label](32696, 'Slovak') -->
+                            <option label="32696">sk-SK</option>
+                            <!-- L[label](32697, 'Slovenian') -->
+                            <option label="32697">sl-SI</option>
+                            <!-- L[label](32698, 'Spanish') -->
+                            <option label="32698">es-ES</option>
+                            <!-- L[label](32699, 'Swedish') -->
+                            <option label="32699">sv-SE</option>
+                            <!-- L[label](32700, 'Thai') -->
+                            <option label="32700">th-TH</option>
+                            <!-- L[label](32701, 'Turkish') -->
+                            <option label="32701">tr-TR</option>
+                            <!-- L[label](32702, 'Ukrainian') -->
+                            <option label="32702">uk-UA</option>
+                        </options>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="list" format="string">
+                        <!-- L(32316, 'Info Language') -->
+                        <heading>32316</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30121, 'Limit of displayed actors in the information') -->
+                <!-- L[help](30122, 'Limits the number of displayed actors in the information. 0 = no limit') -->
+                <setting id="actor_count_limit" type="integer" label="30121" help="30122">
+                    <level>0</level>
+                    <default>10</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>50</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30234, 'Show progressbar in movies and tvshows') -->
+                <setting id="show.progressbar" type="boolean" label="30234" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Grafiki -->
+            <!-- L[label](32703, 'Graphics') -->
+            <group id="2" label="32703">
+                <!-- L[label](32704, 'Graphics quality') -->
+                <setting id="image.quality" type="integer" label="32704" help="">
+                    <level>0</level>
+                    <default>1</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32705, 'low') -->
+                            <option label="32705">0</option>
+                            <!-- L[label](32706, 'high') -->
+                            <option label="32706">1</option>
+                            <!-- L[label](32707, 'highest') -->
+                            <option label="32707">2</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](32708, 'Graphics depends on') -->
+                <setting id="image.sort_by" type="integer" label="32708" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32709, 'rating') -->
+                            <option label="32709">0</option>
+                            <!-- L[label](32710, 'number of votes') -->
+                            <option label="32710">1</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](32318, 'Enable Fanart') -->
+                <setting id="fanart" type="boolean" label="32318" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Filmy -->
+            <!-- L[label](32712, 'Movies') -->
+            <group id="3" label="32712">
+                <!-- L[label](32713, 'Sort by:') -->
+                <setting id="movies.sort" type="integer" label="32713" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32714, 'Popularity') -->
+                            <option label="32714">0</option>
+                            <!-- L[label](32715, 'Year') -->
+                            <option label="32715">1</option>
+                            <!-- L[label](30238, 'Name') -->
+                            <option label="30238">2</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](32716, 'Minimum number of user votes') -->
+                <setting id="tmdbmovie.vote" type="integer" label="32716" help="">
+                    <level>0</level>
+                    <default>100</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>50</step>
+                        <maximum>500</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32571, 'Hide movies in cinema') -->
+                <setting id="hidecinema" type="boolean" label="32571" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32634, 'Months to Rollback for Hide in Cinema') -->
+                <setting id="hidecinema.rollback" type="integer" label="32634" help="">
+                    <level>0</level>
+                    <default>6</default>
+                    <constraints>
+                        <minimum>1</minimum>
+                        <step>1</step>
+                        <maximum>12</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="hidecinema">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- Seriale -->
+            <!-- L[label](32717, 'TV Shows') -->
+            <group id="4" label="32717">
+                <!-- L[label](32713, 'Sort by:') -->
+                <setting id="tvshows.sort" type="integer" label="32713" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32714, 'Popularity') -->
+                            <option label="32714">0</option>
+                            <!-- L[label](32715, 'Year') -->
+                            <option label="32715">1</option>
+                            <!-- L[label](30238, 'Name') -->
+                            <option label="30238">2</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](32716, 'Minimum number of user votes') -->
+                <setting id="tmdbtv.vote" type="integer" label="32716" help="">
+                    <level>0</level>
+                    <default>100</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>50</step>
+                        <maximum>500</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32317, 'Flatten TV seasons') -->
+                <setting id="flatten.tvshows" type="integer" label="32317" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32829, 'Never') -->
+                            <option label="32829">0</option>
+                            <!-- L[label](32830, 'If only one season') -->
+                            <option label="32830">1</option>
+                            <!-- L[label](32831, 'Always') -->
+                            <option label="32831">2</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](30120, 'Display style for season name') -->
+                <setting id="tvshow.season_label" type="integer" label="30120" help="">
+                    <level>0</level>
+                    <default>1</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](30203, 'Season 1') -->
+                            <option label="30203">0</option>
+                            <!-- L[label](30204, 'Season 1 - Title') -->
+                            <option label="30204">1</option>
+                            <!-- L[label](30205, '1. Title') -->
+                            <option label="30205">2</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](32570, 'Show unaired seasons/episodes') -->
+                <setting id="showunaired" type="boolean" label="32570" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Seriale Popularne -->
+            <!-- L[label](32818, 'TV Shows - Popular') -->
+            <group id="5" label="32818">
+                <!-- L[label](32716, 'Minimum number of user votes') -->
+                <setting id="tmdbtv.votePopular" type="integer" label="32716" help="">
+                    <level>0</level>
+                    <default>300</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>10</step>
+                        <maximum>500</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32819, 'Hide anime in popular') -->
+                <setting id="withoutAnime" type="boolean" label="32819" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32820, 'Hide old tv shows') -->
+                <setting id="hideoldshows" type="boolean" label="32820" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32821, 'Hide older than ... years') -->
+                <setting id="hideoldshows.rollback" type="integer" label="32821" help="" parent="hideoldshows">
+                    <level>0</level>
+                    <default>15</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>80</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="hideoldshows">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32822, 'The last episode of which is older than ... years.') -->
+                <setting id="hideoldshowsepi.rollback" type="integer" label="32822" help="" parent="hideoldshows">
+                    <level>0</level>
+                    <default>3</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>80</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="hideoldshows">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <!-- Wyszukiwanie źródeł -->
+        <!-- L[label](32718, 'Source search') -->
+        <category id="searching" label="32718" help="">
+            <!-- Ogolne -->
+            <!-- L[label](32718, 'Source search') -->
+            <group id="1" label="32718">
+                <!-- L[label](32360, 'Providers Language') -->
+                <setting id="providers.lang" type="string" label="32360" help="">
+                    <level>0</level>
+                    <default>Polish</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32845, 'Polish') -->
+                            <option label="32845">Polish</option>
+                            <!-- L[label](32846, 'English') -->
+                            <option label="32846">English</option>
+                            <!-- L[label](32847, 'Polish+English') -->
+                            <option label="32847">Polish+English</option>
+                        </options>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="list" format="string">
+                        <!-- L(32360, 'Providers Language') -->
+                        <heading>32360</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32312, 'Max Search Time') -->
+                <setting id="scrapers.timeout.1" type="integer" label="32312" help="">
+                    <level>0</level>
+                    <default>30</default>
+                    <constraints>
+                        <minimum>10</minimum>
+                        <step>1</step>
+                        <maximum>200</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32572, 'Default Source Identifier Color') -->
+                <setting id="default.color.identify2" type="string" label="32572" help="">
+                    <level>0</level>
+                    <default>FF57A4CB</default>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/default?default=FF57A4CB)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32588, 'Premium Source Identifier Color') -->
+                <setting id="prem.color.identify2" type="string" label="32588" help="">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/prem)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32622, 'Sort by') -->
+                <setting id="hosts.sort" type="integer" label="32622" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32643, 'Providers') -->
+                            <option label="32643">0</option>
+                            <!-- L[label](32644, 'Hostings') -->
+                            <option label="32644">1</option>
+                            <!-- L[label](32645, 'Size') -->
+                            <option label="32645">2</option>
+                            <!-- L[label](32646, 'Custom') -->
+                            <option label="32646">3</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <!-- L(32622, 'Sort by') -->
+                        <heading>32622</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32809, 'criterion 1') -->
+                <setting id="hosts.sort.elem1" label="32809" help="" type="integer" parent="hosts.sort">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32663, 'service') -->
+                            <option label="32663">0</option>
+                            <!-- L[label](32664, 'language') -->
+                            <option label="32664">1</option>
+                            <!-- L[label](32665, 'quality') -->
+                            <option label="32665">2</option>
+                            <!-- L[label](32666, 'size') -->
+                            <option label="32666">3</option>
+                        </options>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="hosts.sort">3</dependency>
+                    </dependencies>
+                    <control type="list" format="string">
+                        <!-- L(32809, 'criterion 1') -->
+                        <heading>32809</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32810, 'criterion 2') -->
+                <setting id="hosts.sort.elem2" label="32810" help="" type="integer" parent="hosts.sort">
+                    <level>0</level>
+                    <default>1</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32663, 'service') -->
+                            <option label="32663">0</option>
+                            <!-- L[label](32664, 'language') -->
+                            <option label="32664">1</option>
+                            <!-- L[label](32665, 'quality') -->
+                            <option label="32665">2</option>
+                            <!-- L[label](32666, 'size') -->
+                            <option label="32666">3</option>
+                            <!-- L[label](32667, 'none') -->
+                            <option label="32667">4</option>
+                        </options>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="hosts.sort">3</dependency>
+                    </dependencies>
+                    <control type="list" format="string">
+                        <!-- L(32810, 'criterion 2') -->
+                        <heading>32810</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32811, 'criterion 3') -->
+                <setting id="hosts.sort.elem3" label="32811" help="" type="integer" parent="hosts.sort">
+                    <level>0</level>
+                    <default>2</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32663, 'service') -->
+                            <option label="32663">0</option>
+                            <!-- L[label](32664, 'language') -->
+                            <option label="32664">1</option>
+                            <!-- L[label](32665, 'quality') -->
+                            <option label="32665">2</option>
+                            <!-- L[label](32666, 'size') -->
+                            <option label="32666">3</option>
+                            <!-- L[label](32667, 'none') -->
+                            <option label="32667">4</option>
+                        </options>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="hosts.sort">3</dependency>
+                    </dependencies>
+                    <control type="list" format="string">
+                        <!-- L(32811, 'criterion 3') -->
+                        <heading>32811</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32812, 'criterion 4') -->
+                <setting id="hosts.sort.elem4" label="32812" help="" type="integer" parent="hosts.sort">
+                    <level>0</level>
+                    <default>3</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32663, 'service') -->
+                            <option label="32663">0</option>
+                            <!-- L[label](32664, 'language') -->
+                            <option label="32664">1</option>
+                            <!-- L[label](32665, 'quality') -->
+                            <option label="32665">2</option>
+                            <!-- L[label](32666, 'size') -->
+                            <option label="32666">3</option>
+                            <!-- L[label](32667, 'none') -->
+                            <option label="32667">4</option>
+                        </options>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="hosts.sort">3</dependency>
+                    </dependencies>
+                    <control type="list" format="string">
+                        <!-- L(32812, 'criterion 4') -->
+                        <heading>32812</heading>
+                    </control>
+                </setting>
+            </group>
+            <!-- Dodatkowe -->
+            <!-- L[label](32669, 'Additional') -->
+            <group id="2" label="32669">
+                <!-- L[label](32587, 'Show Extra Source Info') -->
+                <setting id="sources.extrainfo" type="boolean" label="32587" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32670, 'Show source file name') -->
+                <setting id="sources.filename_in_2nd_line" type="boolean" label="32670" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Filtr zrodel -->
+            <!-- L[label](32338, 'File Filters') -->
+            <group id="3" label="32338">
+                <!-- L[label](32339, 'Max quality') -->
+                <setting id="hosts.quality.max" type="integer" label="32339" help="">
+                    <level>0</level>
+                    <default>3</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32725, '480') -->
+                            <option label="32725">0</option>
+                            <!-- L[label](32724, '720') -->
+                            <option label="32724">1</option>
+                            <!-- L[label](32723, '1080') -->
+                            <option label="32723">2</option>
+                            <!-- L[label](32721, '4K') -->
+                            <option label="32721">3</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](30209, 'Min quality') -->
+                <setting id="hosts.quality.min" type="integer" label="30209" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32725, '480') -->
+                            <option label="32725">0</option>
+                            <!-- L[label](32724, '720') -->
+                            <option label="32724">1</option>
+                            <!-- L[label](32723, '1080') -->
+                            <option label="32723">2</option>
+                            <!-- L[label](32721, '4K') -->
+                            <option label="32721">3</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                </setting>
+                <!-- L[label](30210, 'Max file size in GB') -->
+                <setting id="source.size.max" type="integer" label="30210" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>100</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30237, 'Min file size in GB') -->
+                <setting id="source.size.min" type="integer" label="30237" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>100</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32839, 'Allowed soundtrack language') -->
+                <setting id="source.sound.lang" type="integer" label="32839" help="">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](32840, 'All') -->
+                            <option label="32840">0</option>
+                            <!-- L[label](32841, 'Only PL') -->
+                            <option label="32841">1</option>
+                            <!-- L[label](32842, 'PL + Multi') -->
+                            <option label="32842">2</option>
+                            <!-- L[label](32843, 'Only EN') -->
+                            <option label="32843">3</option>
+                            <!-- L[label](32844, 'EN + MULTI') -->
+                            <option label="32844">4</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <!-- L(32839, 'Allowed soundtrack language') -->
+                        <heading>32839</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30489, 'Hide sources for which the transfer is insufficient') -->
+                <setting id="source.premium.no_transfer" label="30489" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32823, "Don't show sources with subtitles") -->
+                <setting id="SUBTITLES.disallowed" label="32823" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30354, "Don't show sources with AI lector") -->
+                <setting id="LEKTORAI.disallowed" label="30354" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30245, 'Allow HDR format') -->
+                <setting id="HDR.allowed" label="30245" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30248, 'Allow DV format') -->
+                <setting id="DV.allowed" label="30248" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30247, 'Allow AV1 codec') -->
+                <setting id="AV1.allowed" label="30247" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30249, 'Allow HEVC codec') -->
+                <setting id="HEVC.allowed" label="30249" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30246, 'Allow 3D format') -->
+                <setting id="F3D.allowed" label="30246" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30589, 'Include AVI sources') -->
+                <setting id="AVI.allowed" label="30589" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32729, 'Reject CAM quality') -->
+                <setting id="CAM.disallowed" label="32729" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30208, 'also HDTS quality') -->
+                <setting id="HDTS.disallowed" label="30208" type="boolean" help="" parent="CAM.disallowed">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable" setting="CAM.disallowed">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30206, 'Try to reject sound recorded from cinema') -->
+                <setting id="MD.sound.disallowed" label="30206" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32363, 'HEVC') -->
+                <setting id="HEVC" label="32363" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <visible>false</visible>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32614, 'Debrid sources only') -->
+                <setting id="debrid.only" label="32614" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <visible>false</visible>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+        <!-- Zrodla PL -->
+        <!-- L[label](32730, 'Source services PL') -->
+        <category id="plsources" label="32730" help="">
+            <!-- Zrodla Polskie-->
+            <!-- L[label](32730, 'Source services PL') -->
+            <group id="1" label="32730">
+                <!-- L[label](30609, 'AleFilmy (YouTube)') -->
+                <setting id="provider.alefilmy" label="30609" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30374, 'Adapter.pl') -->
+                <setting id="provider.adapterpl" label="30374" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30508, 'Bajeczki24') -->
+                <setting id="provider.bajeczki24" label="30508" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32732, 'CDAPL') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.cda" label="32732" type="boolean" help="32797">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32651, 'E-mail (login)') -->
+                <setting id="cda.username" type="string" label="32651" help="" parent="provider.cda">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.cda">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                        <hidden>false</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="cda.password" type="string" label="32648" help="" parent="provider.cda">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.cda">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](30100, 'Highlight color (premium only)') -->
+                <setting id="cda.color.identify2" label="30100" help="" type="string" parent="provider.cda">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.cda">true</condition>
+                                <condition operator="!is" setting="cda.username"/>
+                                <condition operator="!is" setting="cda.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/cda)</data>
+                    </control>
+                </setting>
+                <!-- L[label](30352, 'List order (premium only)') -->
+                <setting id="cda.sort.order" label="30352" help="" type="integer" parent="provider.cda">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.cda">true</condition>
+                                <condition operator="!is" setting="cda.username"/>
+                                <condition operator="!is" setting="cda.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <!-- L[label](30496, 'CDA-HD') -->
+                <setting id="provider.cdahd" label="30496" type="boolean" help="32797">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30459, 'CF Cookie') -->
+                <setting id="cdahd.cookies_cf" label="30459" help="" type="string" parent="provider.cdahd">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.cdahd">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="cdahd.user_agent" label="30353" help="" type="string" parent="provider.cdahd">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.cdahd">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
+                </setting>
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <!-- L[label](30578, 'Dramaclub24') -->
+                <setting id="provider.dramaclub24" label="30578" type="boolean" help="32797">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32735, 'Ekinotv') -->
+                <setting id="provider.ekino" label="32735" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30601, 'Domain') -->
+                <setting id="ekino.domain" label="30601" help="" type="string" parent="provider.ekino">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekino">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30461, 'on disk: {fsize}, on server: {content}.\n\nDo you want to continue?') -->
+                        <heading>30461</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30602, 'PHPSESSID') -->
+                <setting id="ekino.phpsessid" label="30602" help="" type="string" parent="provider.ekino">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekino">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30603, 'o_autenticate') -->
+                <setting id="ekino.cookies_auth" label="30603" help="" type="string" parent="provider.ekino">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekino">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="ekino.user_agent" label="30353" help="" type="string" parent="provider.ekino">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekino">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32736, 'Filman') -->
+                <setting id="provider.filman" label="32736" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="filman.username" label="32647" help="" type="string" parent="provider.filman">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.filman">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="filman.password" label="32648" help="" type="string" parent="provider.filman">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.filman">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](30619, 'Filman premium') -->
+                <setting id="filman.premium" label="30619" help="" type="boolean" parent="provider.filman">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.filman">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="filman.color.identify2" label="32649" help="" type="string" parent="provider.filman">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.filman">true</condition>
+                                <condition setting="filman.premium">true</condition>
+                                <condition operator="!is" setting="filman.username"/>
+                                <condition operator="!is" setting="filman.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/filman)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="filman.sort.order" label="32734" help="" type="integer" parent="provider.filman">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.filman">true</condition>
+                                <condition setting="filman.premium">true</condition>
+                                <condition operator="!is" setting="filman.username"/>
+                                <condition operator="!is" setting="filman.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30507, 'Filmoteka Narodowa') -->
+                <setting id="provider.filmoteka" label="30507" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30300, 'Filmyonline.cc') -->
+                <setting id="provider.filmyonline" label="30300" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30610, 'KinoSwiat VOD (YouTube)') -->
+                <setting id="provider.kinoswiatvod" label="30610" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30494, 'Ninateka') -->
+                <setting id="provider.ninateka" label="30494" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30299, 'Obejrzyj.to') -->
+                <setting id="provider.obejrzyjto" label="30299" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30506, 'Premiumsmart') -->
+                <setting id="provider.premiumsmart" label="30506" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30560, 'Ogladaj.cc') -->
+                <setting id="provider.ogladajcc" label="30560" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30533, 'Stare-kino') -->
+                <setting id="provider.starekino" label="30533" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30505, 'TVP VOD') -->
+                <setting id="provider.tvpvod" label="30505" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30561, 'Vestroiakr') -->
+                <setting id="provider.vestroiakr" label="30561" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30504, 'VOD.PL') -->
+                <setting id="provider.vodpl" label="30504" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32753, 'Zaluknij.cc') -->
+                <setting id="provider.zaluknijcc" label="32753" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30459, 'CF Cookie') -->
+                <setting id="zaluknij.cookies_cf" label="30459" help="" type="string" parent="provider.zaluknijcc">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.zaluknijcc">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30459, 'CF Cookie') -->
+                        <heading>30459</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="zaluknij.user_agent" label="30353" help="" type="string" parent="provider.zaluknijcc">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.zaluknijcc">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](30301, 'Premium') -->
+            <group id="2" label="30301">
+                <!-- L[label](30580, 'Ekinotv premium') -->
+                <setting id="provider.ekinopremium" label="30580" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30581, 'Authorization method:') -->
+                <setting id="ekinopremium.premium_mode" type="integer" label="30581" help="" parent="provider.ekinopremium">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <!-- L[label](30582, 'by addon ekino-tv') -->
+                            <option label="30582">1</option> <!-- wtyczka ekino-->
+                            <!-- L[label](30583, 'in FanFilm') -->
+                            <option label="30583">2</option> <!-- ff-->
+                        </options>
+                    </constraints>
+                     <dependencies>
+                        <dependency type="visible" setting="provider.ekinopremium">true</dependency>
+                    </dependencies>
+                    <control type="list" format="string">
+                        <!-- L(30575, 'Authorization') -->
+                        <heading>30575</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30584, 'Run ekino-tv addon') -->
+                <setting id="ekinopremium.addon" label="30584" help="" type="action" parent="ekinopremium.premium_mode">
+                    <level>0</level>
+                    <data>RunAddon(plugin.video.ekino-tv)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.ekinopremium">true</condition>
+                                <condition setting="ekinopremium.premium_mode">1</condition>
+                                <condition on="property" name="InfoBool">System.AddonIsEnabled(plugin.video.ekino-tv)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30576, 'Addon ekino-tv not found') -->
+                <!-- L[help](30588, 'Required ekino-tv from ekino.pl') -->
+                <setting id="ekinopremium.noaddon" label="30576" help="30588" type="string" parent="ekinopremium.premium_mode">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.ekinopremium">true</condition>
+                                <condition setting="ekinopremium.premium_mode">1</condition>
+                                <condition on="property" name="InfoBool">!System.AddonIsEnabled(plugin.video.ekino-tv)</condition>
+                            </and>
+                        </dependency>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30576, 'Addon ekino-tv not found') -->
+                        <heading>30576</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30575, 'Authorization') -->
+                <setting id="ekinopremium.action" label="30575" help="" type="action" parent="provider.ekinopremium">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.fanfilm/tools/pairekino)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.ekinopremium">true</condition>
+                                <condition setting="ekinopremium.premium_mode">2</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30577, 'Ekinotv - state') -->
+                <setting id="ekinopremium.pair_status" type="string" label="30577" help="" parent="ekinopremium.action">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.ekinopremium">true</condition>
+                                <condition setting="ekinopremium.premium_mode">2</condition>
+                            </and>
+                        </dependency>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30577, 'Ekinotv - state') -->
+                        <heading>30577</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="ekinopremium.color.identify2" label="32649" help="" type="string" parent="provider.ekinopremium">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekinopremium">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/ekinopremium)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="ekinopremium.sort.order" label="32734" help="" type="integer" parent="provider.ekinopremium">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekinopremium">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30585, 'Ekinotv - secret key') -->
+                <setting id="ekinopremium.client_key" type="string" label="30585" help="" parent="ekinopremium.premium_mode">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.ekinopremium">true</dependency>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30340, 'Enable ratings') -->
+                        <heading>30340</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32741, 'Nopremium') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.nopremium" label="32741" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="nopremium.username" label="32647" help="" type="string" parent="provider.nopremium">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="nopremium.password" label="32648" help="" type="string" parent="provider.nopremium">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="autonopremium" label="32742" help="" type="boolean" parent="provider.nopremium">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="nopremium.color.identify2" label="32649" help="" type="string" parent="provider.nopremium">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/nopremium)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="nopremium.library.color.identify2" label="32650" help="" type="string" parent="provider.nopremium">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/nopremium.library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="nopremium.sort.order" label="32734" help="" type="integer" parent="provider.nopremium">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.nopremium">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32744, 'Rapideo') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.rapideo" label="32744" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="rapideo.username" label="32647" help="" type="string" parent="provider.rapideo">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="rapideo.password" label="32648" help="" type="string" parent="provider.rapideo">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="autorapideo" label="32742" help="" type="boolean" parent="provider.rapideo">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="rapideo.color.identify2" label="32649" help="" type="string" parent="provider.rapideo">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/rapideo)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="rapideo.library.color.identify2" label="32650" help="" type="string" parent="provider.rapideo">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/rapideo.library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="rapideo.sort.order" label="32734" help="" type="integer" parent="provider.rapideo">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.rapideo">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                    <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32747, 'TB7') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.tb7" label="32747" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="tb7.username" label="32647" help="" type="string" parent="provider.tb7">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <!-- L[help](32826, 'Data are not hashed in local database') -->
+                <setting id="tb7.password" label="32648" help="32826" type="string" parent="provider.tb7">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="tb7.auto" label="32742" help="" type="boolean" parent="provider.tb7">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32749, 'Use Notes on the account to store information about downloaded files') -->
+                <!-- L[help](32825, 'Notepad on account') -->
+                <setting id="tb7.use_web_notebook_for_history" label="32749" help="32825" type="boolean" parent="provider.tb7">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="tb7.sort.order" label="32734" help="" type="integer" parent="provider.tb7">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                    <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="tb7.color.identify2" label="32649" help="" type="string" parent="provider.tb7">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/tb7)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="tb7.library.color.identify2" label="32650" help="" type="string" parent="provider.tb7">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.tb7">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/tb7.library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32746, 'Twojlimit') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.twojlimit" label="32746" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="twojlimit.username" label="32647" help="" type="string" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="twojlimit.password" label="32648" help="" type="string" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="autotwojlimit" label="32742" help="" type="boolean" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="twojlimit.color.identify2" label="32649" help="" type="string" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/twojlimit)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="twojlimit.library.color.identify2" label="32650" help="" type="string" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/twojlimit.library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="twojlimit.sort.order" label="32734" help="" type="integer" parent="provider.twojlimit">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.twojlimit">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                    <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30593, 'Wrzucaj') -->
+                <setting id="provider.wrzucaj" label="30593" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="wrzucaj.username" label="32647" help="32797" type="string" parent="provider.wrzucaj">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition setting="provider.wrzucaj">true</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="wrzucaj.password" label="32648" help="32797" type="string" parent="provider.wrzucaj">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition setting="provider.wrzucaj">true</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](30100, 'Highlight color (premium only)') -->
+                <setting id="wrzucaj.color.identify2" label="30100" help="" type="string" parent="provider.wrzucaj">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/wrzucaj)</data>
+                    </control>
+                </setting>
+                <!-- L[label](30352, 'List order (premium only)') -->
+                <setting id="wrzucaj.sort.order" label="30352" help="" type="integer" parent="provider.wrzucaj">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30594, 'Wrzucaj (purchased package with transfer)') -->
+                <setting id="provider.wrzucaj.2" label="30594" help="" type="boolean" parent="provider.wrzucaj">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="wrzucaj.2.auto" label="32742" help="" type="boolean" parent="provider.wrzucaj.2">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition setting="provider.wrzucaj.2">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="wrzucaj.2.sort.order" label="32734" help="" type="integer" parent="provider.wrzucaj.2">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition setting="provider.wrzucaj.2">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="wrzucaj.2.color.identify2" label="32649" help="" type="string" parent="provider.wrzucaj.2">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition setting="provider.wrzucaj.2">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/wrzucaj.2)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="wrzucaj.2.library.color.identify2" label="32650" help="" type="string" parent="provider.wrzucaj.2">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.wrzucaj">true</condition>
+                                <condition setting="provider.wrzucaj.2">true</condition>
+                                <condition operator="!is" setting="wrzucaj.username"/>
+                                <condition operator="!is" setting="wrzucaj.password"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/wrzucaj.2.library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32750, 'XT7') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.xt7" label="32750" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="xt7.username" label="32647" help="" type="string" parent="provider.xt7">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                    <!-- L(32647, 'Login') -->
+                    <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="xt7.password" label="32648" help="" type="string" parent="provider.xt7">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32742, 'Automatic use of transfer') -->
+                <setting id="xt7.auto" label="32742" help="" type="boolean" parent="provider.xt7">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32751, 'Use Notes on the account to store information about downloaded files') -->
+                <setting id="xt7.use_web_notebook_for_history" label="32751" help="" type="boolean" parent="provider.xt7">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32734, 'List order') -->
+                <setting id="xt7.sort.order" label="32734" help="" type="integer" parent="provider.xt7">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>10</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                    <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="xt7.color.identify2" label="32649" help="" type="string" parent="provider.xt7">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/xt7)</data>
+                    </control>
+                </setting>
+                <!-- L[label](32650, 'Highlight color for account items') -->
+                <setting id="xt7.library.color.identify2" label="32650" help="" type="string" parent="provider.xt7">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.xt7">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/xt7.library)</data>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](30518, 'Anime') -->
+            <group id="3" label="30518">
+                <!-- L[label](30604, 'Anime Realms') -->
+                <setting id="provider.animerealms" label="30604" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32731, 'AnimeZone') -->
+                <setting id="provider.animezone" label="32731" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30511, 'Desu-online') -->
+                <setting id="provider.desuonline" label="30511" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30512, 'Docchi') -->
+                <setting id="provider.docchi" label="30512" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30513, 'FrixySubs') -->
+                <setting id="provider.frixysubs" label="30513" type="boolean" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32745, 'Shinden') -->
+                <!-- L[help](32797, 'Required login information (data is not encrypted)') -->
+                <setting id="provider.shinden" label="32745" help="32797" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32647, 'Login') -->
+                <setting id="shinden.username" label="32647" help="" type="string" parent="provider.shinden">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.shinden">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32647, 'Login') -->
+                        <heading>32647</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="shinden.password" label="32648" help="" type="string" parent="provider.shinden">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.shinden">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <!-- L[label](32761, 'Source services EN') -->
+        <category id="ensources" label="32761" help="">
+            <!-- Zrodla Angielskie-->
+            <!-- L[label](32761, 'Source services EN') -->
+            <group id="1" label="32761">
+                <!-- L[label](30557, '2embed') -->
+                <setting id="provider.embed2" label="30557" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30618, 'African cinema (YouTube)') -->
+                <setting id="provider.african" label="30618" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30509, 'Archive.org') -->
+                <setting id="provider.archiveorg" label="30509" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30605, 'DahmerMovies') -->
+                <setting id="provider.dahmermovies" label="30605" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30600, 'FilmLinks4U (Bollywood)') -->
+                <setting id="provider.filmlinks4u" label="30600" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30595, 'Goojara') -->
+                <setting id="provider.goojara" label="30595" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30579, 'Moonflix.com') -->
+                <setting id="provider.moonflix" label="30579" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30606, 'Multivid') -->
+                <setting id="provider.multivid" label="30606" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30590, 'NetMirror') -->
+                <setting id="provider.netmirror" label="30590" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30649, 't_hash') -->
+                <setting id="netmirror.cookies_t_hash" label="30649" help="" type="string" parent="provider.netmirror">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.netmirror">true</condition>
+                                <condition on="property" name="InfoBool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30649, 't_hash') -->
+                        <heading>30649</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30616, 't_hash_t') -->
+                <setting id="netmirror.cookies_t_hash_t" label="30616" help="" type="string" parent="provider.netmirror">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.netmirror">true</condition>
+                                <condition on="property" name="InfoBool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30616, 't_hash_t') -->
+                        <heading>30616</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30652, 't_hash_p') -->
+                <setting id="netmirror.cookies_t_hash_p" label="30652" help="" type="string" parent="provider.netmirror">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.netmirror">true</condition>
+                                <condition on="property" name="InfoBool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30652, 't_hash_p') -->
+                        <heading>30652</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30617, 'user_token') -->
+                <setting id="netmirror.cookies_user_token" label="30617" help="" type="string" parent="provider.netmirror">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.netmirror">true</condition>
+                                <condition on="property" name="InfoBool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30617, 'user_token') -->
+                        <heading>30617</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30353, 'User agent') -->
+                <setting id="netmirror.user_agent" label="30353" help="" type="string" parent="provider.netmirror">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="provider.netmirror">true</condition>
+                                <condition on="property" name="InfoBool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30353, 'User agent') -->
+                        <heading>30353</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30607, 'NoTorrent') -->
+                <setting id="provider.notorrent" label="30607" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30624, 'StreamIMDB') -->
+                <setting id="provider.streamimdb" label="30624" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30613, 'OnlyFlix') -->
+                <setting id="provider.onlyflix" label="30613" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30611, 'PlayIMDB') -->
+                <setting id="provider.playimdb" label="30611" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30608, 'Videasy') -->
+                <setting id="provider.videasy" label="30608" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30597, 'Vidsrc') -->
+                <setting id="provider.vidsrc" label="30597" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30625, 'Vidzee') -->
+                <setting id="provider.vidzee" label="30625" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30598, 'Vsembed') -->
+                <setting id="provider.vsembed" label="30598" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">Integer.IsGreaterOrEqual(System.BuildVersionShort,22)</dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30626, 'VixSrc') -->
+                <setting id="provider.vixsrc" label="30626" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30627, 'VidLink') -->
+                <setting id="provider.vidlink" label="30627" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="vidlink.cookies_cf" label="30459" help="" type="string" parent="provider.vidlink">
+                    <level>0</level>
+                    <default></default>
+                    <control type="edit">
+                        <heading>30459</heading>
+                    </control>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.vidlink">true</dependency>
+                    </dependencies>
+                </setting>
+                <setting id="vidlink.user_agent" label="30353" help="" type="string" parent="provider.vidlink">
+                    <level>0</level>
+                    <default></default>
+                    <control type="edit">
+                        <heading>30353</heading>
+                    </control>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.vidlink">true</dependency>
+                    </dependencies>
+                </setting>
+                <!-- L[label](30599, 'Webstreamr') -->
+                <setting id="provider.webstreamr" label="30599" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30620, 'YesMovies') -->
+                <setting id="provider.yesmovies" label="30620" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+        <!-- Biblioteka-->
+        <!-- L[label](32541, 'Library') -->
+        <category id="library" label="32541" help="">
+            <!-- L[label](32541, 'Library') -->
+            <group id="1" label="32541">
+                <!-- L[label](32523, 'Include kodi library in sources') -->
+                <setting id="provider.library" label="32523" type="boolean" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32649, 'Highlight color') -->
+                <setting id="library.color.identify2" label="32649" help="" type="string" parent="provider.library">
+                    <level>0</level>
+                    <default>00000000</default>
+                    <dependencies>
+                        <dependency type="visible" setting="provider.library">true</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <data>RunPlugin(plugin://plugin.video.fanfilm/tools/colorpicker/open/library)</data>
+                    </control>
+                </setting>
+                <!-- L[label](30123, 'Enable library') -->
+                <setting id="enable_library" type="boolean" label="30123" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32543, 'Movies') -->
+                <setting id="library.movie" type="path" label="32543" help="" parent="enable_library">
+                    <level>0</level>
+                    <default>special://userdata/addon_data/plugin.video.fanfilm/Movies</default>
+                    <constraints>
+                        <writable>false</writable>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="button" format="path">
+                        <!-- L(32543, 'Movies') -->
+                        <heading>32543</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32544, 'TV Shows') -->
+                <setting id="library.tv" type="path" label="32544" help="" parent="enable_library">
+                    <level>0</level>
+                    <default>special://userdata/addon_data/plugin.video.fanfilm/TVShows</default>
+                    <constraints>
+                        <writable>false</writable>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="button" format="path">
+                        <!-- L(32544, 'TV Shows') -->
+                        <heading>32544</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32545, 'Auto update TV Shows') -->
+                <setting id="library.service.update" label="32545" help="" type="boolean" parent="enable_library">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                    <visible>false</visible>
+                </setting>
+                <!-- L[label](32546, 'Show notifications during update') -->
+                <setting id="library.service.notification" label="32546" help="" type="boolean" parent="enable_library">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32547, 'Update library after adding content') -->
+                <setting id="library.update" label="32547" help="" type="boolean" parent="enable_library">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32548, 'Avoid creating duplicate content') -->
+                <setting id="library.check" label="32548" help="" type="boolean" parent="enable_library">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32565, 'Include episodes with unknown air dates') -->
+                <setting id="library.include_unknown" label="32565" help="" type="boolean" parent="enable_library">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32566, 'Delay since episode premiere (days)') -->
+                <setting id="library.days_delay" label="32566" help="" type="integer" parent="enable_library">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>3</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                    <popup>false</popup>
+                    </control>
+                </setting>
+                <!-- L[label](30269, 'Capture playback progress of entire library') -->
+                <setting id="library.capture_playback" type="boolean" label="30269" help="" parent="enable_library">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="enable_library">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                    <visible>false</visible>
+                </setting>
+            </group>
+            <!-- L[label](30358, 'Own lists') -->
+            <group id="2" label="30358">
+                <!-- L[label](32814, 'Library collection update settings') -->
+                <setting id="LibSyncSettings" type="string" label="32814" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                            <condition setting="enable_library">true</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32814, 'Library collection update settings') -->
+                        <heading>32814</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32616, 'Sync library on Kodi Start') -->
+                <setting id="autoOwnOnStart" label="32616" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32613, 'Update the library every ... hours/s') -->
+                <setting id="schedOwnTime" label="32613" help="" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>24</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](32771, 'Trakt.tv') -->
+            <group id="3" label="32771">
+                <!-- L[label](32814, 'Library collection update settings') -->
+                <setting id="LibSyncSettings1" type="string" label="32814" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                            <condition setting="enable_library">true</condition>
+                        </dependency>
+                        <dependency type="visible">
+                            <condition operator="!is" setting="trakt.token"/>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32814, 'Library collection update settings') -->
+                        <heading>32814</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32616, 'Sync library on Kodi Start') -->
+                <setting id="autoTraktOnStart" label="32616" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="trakt.token"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32613, 'Update the library every ... hours/s') -->
+                <setting id="schedTraktTime" label="32613" help="" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>24</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="trakt.token"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](32775, 'TMDB') -->
+            <group id="4" label="32775">
+                <!-- L[label](32814, 'Library collection update settings') -->
+                <setting id="LibSyncSettings2" type="string" label="32814" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                            <condition setting="enable_library">true</condition>
+                        </dependency>
+                        <dependency type="visible">
+                            <condition operator="!is" setting="tmdb.sessionid"/>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32814, 'Library collection update settings') -->
+                        <heading>32814</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32616, 'Sync library on Kodi Start') -->
+                <setting id="autoTmdbOnStart" label="32616" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="tmdb.sessionid"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32613, 'Update the library every ... hours/s') -->
+                <setting id="schedTmdbTime" label="32613" help="" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>24</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="tmdb.sessionid"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](32034, 'IMDb') -->
+            <group id="5" label="32034">
+                <!-- L[label](32814, 'Library collection update settings') -->
+                <setting id="LibSyncSettings3" type="string" label="32814" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                            <condition setting="enable_library">true</condition>
+                        </dependency>
+                        <dependency type="visible">
+                            <condition operator="!is" setting="imdb.user"/>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32814, 'Library collection update settings') -->
+                        <heading>32814</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32616, 'Sync library on Kodi Start') -->
+                <setting id="autoIMdbOnStart" label="32616" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="imdb.user"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32613, 'Update the library every ... hours/s') -->
+                <setting id="schedIMdbTime" label="32613" help="" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>24</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="imdb.user"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- L[label](30357, 'MDBList') -->
+            <group id="6" label="30357">
+                <!-- L[label](32814, 'Library collection update settings') -->
+                <setting id="LibSyncSettings4" type="string" label="32814" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                            <condition setting="enable_library">true</condition>
+                        </dependency>
+                        <dependency type="visible">
+                            <condition operator="!is" setting="mdblist.api_key"/>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32814, 'Library collection update settings') -->
+                        <heading>32814</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32616, 'Sync library on Kodi Start') -->
+                <setting id="autoMdbListOnStart" label="32616" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="mdblist.api_key"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32613, 'Update the library every ... hours/s') -->
+                <setting id="schedMdbListTime" label="32613" help="" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>24</maximum>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible">
+                            <and>
+                                <condition setting="enable_library">true</condition>
+                                <condition operator="!is" setting="mdblist.api_key"/>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <!-- Pobieranie -->
+        <!-- L[label](32347, 'Downloads') -->
+        <category id="download" label="32347" help="">
+            <!-- L[label](32347, 'Downloads') -->
+            <group id="1" label="32347">
+                <!-- L[label](32768, 'Include in sources') -->
+                <setting id="provider.download" label="32768" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30318, 'Additional folder to search') -->
+                <setting id="download.other_folder" label="30318" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32653, 'Location') -->
+                <setting id="download.other_folder_path" type="path" label="32653" help="" parent="download.other_folder">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <writable>false</writable>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="download.other_folder">true</dependency>
+                    </dependencies>
+                    <control type="button" format="path"/>
+                </setting>
+                <!-- L[label](32348, 'Enable downloads') -->
+                <setting id="downloads" label="32348" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32349, 'Movies') -->
+                <setting id="movie.download.path" type="path" label="32349" help="" parent="downloads">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <writable>false</writable>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="button" format="path">
+                        <!-- L(32349, 'Movies') -->
+                        <heading>32349</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32350, 'TV') -->
+                <setting id="tv.download.path" type="path" label="32350" help="" parent="downloads">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <writable>false</writable>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="button" format="path">
+                        <!-- L(32350, 'TV') -->
+                        <heading>32350</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30316, 'Add extra info') -->
+                <setting id="download.downinfo" label="30316" help="" type="boolean" parent="downloads">
+                    <level>0</level>
+                    <default>true</default>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30317, 'Save with local title') -->
+                <setting id="download.downlocaltitle" label="30317" help="" type="boolean" parent="downloads">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30612, 'Show Download Manager after download start') -->
+                <setting id="download.show_manager" label="30612" help="" type="boolean" parent="downloads">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30613, 'Max concurrent downloads') -->
+                <setting id="download.max_concurrent" label="30613" help="" type="integer" parent="downloads">
+                    <level>0</level>
+                    <default>3</default>
+                    <dependencies>
+                        <dependency type="enable" setting="downloads">true</dependency>
+                    </dependencies>
+                    <control type="integer"/>
+                </setting>
+                <!-- L[label](30614, 'TUI Color Theme') -->
+                <setting id="theme" label="30614" help="" type="string" parent="downloads">
+                    <level>0</level>
+                    <default>textual-dark</default>
+                    <control type="string"/>
+                </setting>
+            </group>
+        </category>
+        <!-- Konta, klucze, autoryzacja -->
+        <!-- L[label](32769, 'Accounts, keys and authorizations') -->
+        <category id="keysandauth" label="32769" help="">
+            <!-- L[label](32769, 'Accounts, keys and authorizations') -->
+            <group id="1" label="32769">
+                <!-- Klucze -->
+                <!-- L[label](32770, 'Change default keys') -->
+                <!-- L[help](32800, 'Changing values may cause addon to not work properly') -->
+                <setting id="own_keys" label="32770" help="32800" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32654, 'Fanart User Key') -->
+                <setting id="fanart.tv.user" label="32654" help="" type="string" parent="own_keys">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="own_keys">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32654, 'Fanart User Key') -->
+                        <heading>32654</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32655, 'Fanart Dev Key') -->
+                <setting id="fanart.tv.dev" label="32655" help="" type="string" parent="own_keys">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="own_keys">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32655, 'Fanart Dev Key') -->
+                        <heading>32655</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32656, 'TMDb API Key') -->
+                <setting id="tmdb.api_key" label="32656" help="" type="string" parent="own_keys">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="own_keys">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32656, 'TMDb API Key') -->
+                        <heading>32656</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30201, 'TRAKT Client key') -->
+                <setting id="trakt.client_key" label="30201" help="" type="string" parent="own_keys">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="own_keys">true</dependency>
+                        <dependency type="enable" operator="is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30201, 'TRAKT Client key') -->
+                        <heading>30201</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30202, 'TRAKT Secret client key') -->
+                <setting id="trakt.secret_key" label="30202" help="" type="string" parent="own_keys">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="visible" setting="own_keys">true</dependency>
+                        <dependency type="enable" operator="is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(30202, 'TRAKT Secret client key') -->
+                        <heading>30202</heading>
+                    </control>
+                </setting>
+            </group>
+            <!-- TRAKT -->
+            <!-- L[label](32771, 'Trakt.tv') -->
+            <group id="2" label="32771">
+                <!-- L[label](32641, 'Logged as') -->
+                <setting id="trakt.user" type="string" label="32641" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                        <dependency type="visible" operator="!is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32641, 'Logged as') -->
+                        <heading>32641</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32306, 'Authorization...') -->
+                <setting id="trakt.auth" type="action" label="32306" help="">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.fanfilm/tools/trakt/auth)</data>
+                    <dependencies>
+                        <dependency type="visible" operator="is" setting="trakt.token"/>
+                        <dependency type="enable" operator="is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](32777, 'Revoke authorization') -->
+                <setting id="trakt.auth.revoke" type="action" label="32777" help="">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.fanfilm/tools/trakt/revoke)</data>
+                    <dependencies>
+                        <dependency type="visible" operator="!is" setting="trakt.token"/>
+                        <dependency type="enable" operator="!is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](32657, 'Trakt Token') -->
+                <setting id="trakt.token" type="string" label="32657" help="">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32657, 'Trakt Token') -->
+                        <heading>32657</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32658, 'Trakt Refresh') -->
+                <setting id="trakt.refresh" label="32658" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(32658, 'Trakt Refresh') -->
+                        <heading>32658</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32828, 'Trakt Last Activity') -->
+                <setting id="trakt.last_activity" label="32828" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                        <dependency type="visible" operator="!is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32828, 'Trakt Last Activity') -->
+                        <heading>32828</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30333, 'Show sync notification') -->
+                <setting id="trakt.sync_notification" type="boolean" label="30333" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" operator="!is" setting="trakt.token"/>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](30340, 'Enable ratings') -->
+                <setting id="trakt.rating" type="boolean" label="30340" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="trakt.token" operator="!is"/>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- TMDB -->
+            <!-- L[label](32775, 'TMDB') -->
+            <group id="3" label="32775">
+                <!-- L[label](32659, 'User') -->
+                <setting id="tmdb.username" label="32659" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(32659, 'User') -->
+                        <heading>32659</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32648, 'Password') -->
+                <setting id="tmdb.password" label="32648" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(32648, 'Password') -->
+                        <heading>32648</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <!-- L[label](32660, 'Token') -->
+                <setting id="tmdb.sessionid" type="string" label="32660" help="">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32660, 'Token') -->
+                        <heading>32660</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32660, 'Token') -->
+                <setting id="tmdb.access_token" type="string" label="32660" help="">
+                    <level>0</level>
+                    <default/>
+                    <visible>false</visible>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable">
+                            <condition on="property" name="InfoBool">false</condition>
+                        </dependency>
+                    </dependencies>
+                    <control type="edit" format="string">
+                        <!-- L(32660, 'Token') -->
+                        <heading>32660</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32306, 'Authorization...') -->
+                <setting id="tmdb.authorize" label="32306" help="" type="action">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.fanfilm/tools/tmdb/auth)</data>
+                    <dependencies>
+                        <dependency type="visible" operator="is" setting="tmdb.sessionid"/>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](32777, 'Revoke authorization') -->
+                <setting id="tmdb.deauthorize" label="32777" help="" type="action">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.fanfilm/tools/tmdb/revoke)</data>
+                    <dependencies>
+                        <dependency type="visible" operator="!is" setting="tmdb.sessionid"/>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](30340, 'Enable ratings') -->
+                <setting id="tmdb.rating" type="boolean" label="30340" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="tmdb.sessionid" operator="!is"/>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- IMDB -->
+            <!-- L[label](32034, 'IMDb') -->
+            <group id="4" label="32034">
+                <!-- L[label](32303, 'User') -->
+                <setting id="imdb.user" label="32303" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(32303, 'User') -->
+                        <heading>32303</heading>
+                    </control>
+                </setting>
+            </group>
+            <!-- MDBList -->
+            <!-- L[label](30357, 'MDBList') -->
+            <group id="5" label="30357">
+                <!-- L[label](30163, 'MDBList API Key') -->
+                <setting id="mdblist.api_key" label="30163" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(30163, 'MDBList API Key') -->
+                        <heading>30163</heading>
+                    </control>
+                </setting>
+                <!-- L[label](30340, 'Enable ratings') -->
+                <setting id="mdblist.rating" type="boolean" label="30340" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="visible" setting="mdblist.api_key" operator="!is"/>
+                    </dependencies>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+        <!-- Konserwacja -->
+        <!-- L[label](32778, 'Maintenance') -->
+        <category id="maintenance" label="32778" help="">
+            <!-- L[label](32778, 'Maintenance') -->
+            <group id="1" label="32778">
+                <!-- L[label](32661, 'Addon version') -->
+                <setting id="addon.version" label="32661" help="" type="string">
+                    <level>0</level>
+                    <default/>
+                    <enable>false</enable>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <!-- L(32661, 'Addon version') -->
+                        <heading>32661</heading>
+                    </control>
+                </setting>
+                <!-- L[label](32779, 'Install Kodi Logfile Uploader') -->
+                <setting id="loguploader_install" label="32779" help="" type="action">
+                    <level>0</level>
+                    <data>InstallAddon(script.kodi.loguploader)</data>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">!System.AddonIsEnabled(script.kodi.loguploader)</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](32780, 'Generate logs') -->
+                <setting id="loguploader_send" label="32780" help="" type="action">
+                    <level>0</level>
+                    <data>RunAddon(script.kodi.loguploader)</data>
+                    <dependencies>
+                        <dependency type="visible" on="property" name="infobool">System.AddonIsEnabled(script.kodi.loguploader)</dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](32816, 'Max number of python threads') -->
+                <setting id="threads.count" type="integer" label="32816" help="">
+                    <level>0</level>
+                    <default>300</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>300</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- Ustawienia cache -->
+            <!-- L[label](32781, 'Cache settings') -->
+            <group id="2" label="32781">
+                <!-- L[label](32720, 'Sources cache') -->
+                <setting id="enableSourceCache" type="boolean" label="32720" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <!-- L[label](32783, 'Cache list') -->
+                <setting id="listCache" label="32783" help="" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- Automatyczne czyszczenie cache -->
+            <!-- L[label](32784, 'Automatic cache cleaning') -->
+            <group id="3" label="32784">
+                <!-- L[label](32787, 'Clean media cache older than ... days') -->
+                <setting id="schedCleanMetaCache" label="32787" help="" type="integer">
+                    <level>0</level>
+                    <default>7</default>
+                    <constraints>
+                        <minimum>1</minimum>
+                        <step>1</step>
+                        <maximum>365</maximum>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
+            </group>
+            <!-- Opcje logów -->
+            <!-- L[label](32832, 'Developer section') -->
+            <group id="4" label="32832">
+                <!-- L[label](32833, 'Show developer logs') -->
+                <setting id="dev.fflog" label="32833" help="" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <!-- ustawienia innych wtyczek -->
+            <!-- L[label](32539, 'Configure settings for dependent add-ons.') -->
+            <group id="5" label="32539">
+                <!-- L[label](32540, 'URLResolver Settings') -->
+                <setting id="open_resolver_settings" label="32540" help="" type="action">
+                    <level>0</level>
+                    <data>Addon.OpenSettings(script.module.resolveurl)</data>
+                    <control type="button" format="action">
+                    <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](30312, 'InputStreamAdaptive Settings') -->
+                <setting id="open_isa_settings" label="30312" help="" type="action">
+                    <level>0</level>
+                    <data>Addon.OpenSettings(inputstream.adaptive)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+                <!-- L[label](30313, 'InputStream Helper Settings') -->
+                <setting id="open_ish_settings" label="30313" help="" type="action">
+                    <level>0</level>
+                    <data>Addon.OpenSettings(script.module.inputstreamhelper)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+            </group>
+        </category>
+    </section>
+</settings>

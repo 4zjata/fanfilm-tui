@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns:ff="ff">
+  <ff:defines>
+
+    <macro name="alternatives_button">
+      <param name="top" value=""/>
+      <param name="right" value="20"/>
+      <param name="onup" value="{120 + n - 1}"/>
+      <param name="ondown" value="{120 + n + 1}"/>
+      <param name="onleft" value="{100 + n}"/>
+      <param name="onright" value="{100 + n}"/>
+      <control type="group">
+        <height>64</height>
+        <width>64</width>
+        <right>{right}</right>
+        <left/>
+        <top>{top or (10 + (n-1) * 80)}</top>
+        <bottom/>
+        <control type="button" id="{120 + n}">
+          <height/>
+          <width/>
+          <right>0</right>
+          <left>0</left>
+          <top>0</top>
+          <bottom>0</bottom>
+          <aligny>center</aligny>
+          <align>center</align>
+          <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+          <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+          <colordiffuse/>
+          <onleft>{onleft}</onleft>
+          <onright>{onright}</onright>
+          <onup>{onup}</onup>
+          <ondown>{ondown}</ondown>
+        </control>
+        <control type="image">
+          <height>52</height>
+          <width>52</width>
+          <top>6</top>
+          <left>6</left>
+          <right/>
+          <bottom/>
+          <aligny>center</aligny>
+          <align>center</align>
+          <texture colordiffuse="B3FFFFFF">icons/list.32.png</texture>
+        </control>
+      </control>
+    </macro>
+
+    <macro name="badge.modified">
+      <param name="top" value=""/>
+      <param name="left" value="-15"/>
+      <param name="bottom" value=""/>
+      <param name="right" value=""/>
+      <control type="image">
+        <visible>String.IsEqual(Window.Property(search.modified.{key}),true)</visible>
+        <height>32</height>
+        <width>32</width>
+        <top>{top}</top>
+        <left>{left}</left>
+        <right>{right}</right>
+        <bottom>{bottom}</bottom>
+        <aligny>center</aligny>
+        <align>center</align>
+        <texture colordiffuse="B3FFFF99">icons/modified.32.png</texture>
+      </control>
+    </macro>
+
+  </ff:defines>
+
+  <!-- <zorder>5</zorder> -->
+  <coordinates>
+    <top>0</top>
+    <left>0</left>
+    <width>1920</width>
+    <height>1080</height>
+  </coordinates>
+  <defaultcontrol>31</defaultcontrol>
+
+  <controls>
+    <!-- dimmed background -->
+    <control type="image">
+      <top/>
+      <left/>
+      <width>1920</width>
+      <height>1080</height>
+      <texture border="10" colordiffuse="BF000000">white.png</texture>
+    </control>
+
+    <!-- window -->
+    <control type="group">
+      <centertop>50%</centertop>
+      <centerleft>50%</centerleft>
+      <top/>
+      <left/>
+      <width>1400</width>
+      <height>820</height>
+      <font>font_title</font>
+      <control type="image">
+        <colordiffuse>D9202E39</colordiffuse>
+        <texture border="20">dialogs/rounded.png</texture>
+      </control>
+      <control type="image">
+        <colordiffuse>D9141519</colordiffuse>
+        <texture border="20">dialogs/rounded.png</texture>
+        <bordersize>4</bordersize>
+      </control>
+
+      <!-- heading (dialog title) -->
+      <control type="label">
+        <centerleft>50%</centerleft>
+        <left/>
+        <top>20</top>
+        <height>50</height>
+        <align>center</align>
+        <textcolor>B3FFFFFF</textcolor>
+        <font ff:style="heading">font40_title</font>
+        <!-- L(30257, 'Edit source search data') -->
+        <label>$ADDON[plugin.video.fanfilm 30257]</label>
+      </control>
+
+      <!-- Separator -->
+      <control type="image">
+        <colordiffuse>D9202E39</colordiffuse>
+        <texture border="2">white.png</texture>
+        <height>2</height>
+        <width>1350</width>
+        <top>90</top>
+        <centerleft>50%</centerleft>
+        <left/>
+      </control>
+
+      <!-- main container -->
+      <control type="group">
+        <left>40</left>
+        <right>50</right>
+        <!-- <top>110</top> -->
+        <!-- <bottom>170</bottom> -->
+        <top>120</top>
+        <bottom>170</bottom>
+
+        <!-- DEBUG -->
+        <!-- <control type="image"><texture background="true" colordiffuse="66990000">white.png</texture></control> -->
+
+        <!--
+          localtitle,
+          title,
+          originalname,
+          year, premiered,
+          imdb, tmdb,
+          tvshowtitle, season, episode,
+        -->
+
+        <!-- <control type="label"> -->
+        <!--   <top>0</top> -->
+        <!--   <width>250</width> -->
+        <!--   <height>100</height> -->
+        <!--   <align>left</align> -->
+        <!--   <aligny>center</aligny> -->
+        <!--   <textcolor>B3FFFFFF</textcolor> -->
+        <!--   <label>Title:</label> -->
+        <!-- </control> -->
+        <!-- <control type="group"> -->
+        <!--   <!-1- <aligny>top</aligny> -1-> -->
+        <!--   <top>0</top> -->
+        <!--   <width>250</width> -->
+        <!--   <height>100</height> -->
+        <!--   <control type="image"><texture background="true" colordiffuse="33cccc00">white.png</texture></control> -->
+        <!-- </control> -->
+
+        <!-- Title -->
+        <control type="edit" id="101">
+          <!-- <description>My First edit control</description> -->
+          <top>0</top>
+          <left>0</left>
+          <right>90</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30258, 'Title:') -->
+          <label>$ADDON[plugin.video.fanfilm 30258]</label>
+          <!-- :translate=false: -->
+          <hinttext>Title</hinttext>
+          <onup>31</onup>
+          <ondown>102</ondown>
+          <onright>121</onright>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="alternatives_button" n="1" onup="31"/>
+        <ff:macro macro="badge.modified" key="localtitle" top="15"/>
+
+        <!-- English Title -->
+        <control type="edit" id="102">
+          <top>80</top>
+          <left>0</left>
+          <right>90</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30259, 'English Title:') -->
+          <label>$ADDON[plugin.video.fanfilm 30259]</label>
+          <!-- :translate=false: -->
+          <hinttext>Title</hinttext>
+          <onup>101</onup>
+          <ondown>103</ondown>
+          <onleft>122</onleft>
+          <onright>122</onright>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="alternatives_button" n="2"/>
+        <ff:macro macro="badge.modified" key="title" top="95"/>
+
+        <!-- Original Title -->
+        <control type="edit" id="103">
+          <top>160</top>
+          <left>0</left>
+          <right>90</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30260, 'Original Title:') -->
+          <label>$ADDON[plugin.video.fanfilm 30260]</label>
+          <!-- :translate=false: -->
+          <hinttext>Title</hinttext>
+          <onup>102</onup>
+          <ondown>104</ondown>
+          <onleft>123</onleft>
+          <onright>123</onright>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="alternatives_button" n="3" ondown="131"/>
+        <ff:macro macro="badge.modified" key="originalname" top="175"/>
+
+        <!-- Year -->
+        <control type="edit" id="104">
+          <top>240</top>
+          <left>0</left>
+          <right>55%</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30261, 'Year:') -->
+          <label>$ADDON[plugin.video.fanfilm 30261]</label>
+          <!-- :translate=false: -->
+          <hinttext>Year</hinttext>
+          <onup>103</onup>
+          <ondown>105</ondown>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="badge.modified" key="year" top="255"/>
+        <!-- Premiered -->
+        <control type="edit" id="105">
+          <top>240</top>
+          <left>55%</left>
+          <right>0</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30262, 'Premiered:') -->
+          <label>$ADDON[plugin.video.fanfilm 30262]</label>
+          <!-- :translate=false: -->
+          <hinttext>Enter date</hinttext>
+          <onup>104</onup>
+          <ondown>106</ondown>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="badge.modified" key="premiered" top="255" left="54%"/>
+
+        <!-- IMDB -->
+        <control type="edit" id="106">
+          <top>320</top>
+          <left>0</left>
+          <right>55%</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- :translate=false: -->
+          <label>IMDB:</label>
+          <!-- :translate=false: -->
+          <hinttext>ID</hinttext>
+          <onup>105</onup>
+          <ondown>107</ondown>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="badge.modified" key="imdb" top="335"/>
+        <!-- TMDB -->
+        <control type="edit" id="107">
+          <top>320</top>
+          <left>55%</left>
+          <right>0</right>
+          <height>80</height>
+          <align>left</align>
+          <width/>
+          <aligny>center</aligny>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- :translate=false: -->
+          <label>TMDB:</label>
+          <!-- :translate=false: -->
+          <hinttext>ID</hinttext>
+          <onup>106</onup>
+          <ondown>109</ondown>
+          <description>ABC</description>
+          <textoffsetx>25</textoffsetx>
+          <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+          <texturenofocus/>
+        </control>
+        <ff:macro macro="badge.modified" key="tmdb" top="335" left="54%"/>
+
+        <!-- Show specific fields -->
+        <control type="group" id="92">
+          <top>400</top>
+          <visible>String.IsEqual(Window.Property(search.media_type),episode)</visible>
+          <!-- TV Show - DEPRECATED -->
+          <!-- <control type="edit" id="108"> -->
+          <!--   <height>70</height> -->
+          <!--   <align>left</align> -->
+          <!--   <width/> -->
+          <!--   <aligny>center</aligny> -->
+          <!--   <textcolor>B3FFFFFF</textcolor> -->
+          <!--   <focusedcolor>ffffffff</focusedcolor> -->
+          <!--   <font ff:style="normal">font13</font> -->
+          <!--   <label>$ADDON[plugin.video.fanfilm 30263]</label> -->
+          <!--   <!-1- :translate=false: -1-> -->
+          <!--   <hinttext>Title</hinttext> -->
+          <!--   <onup>107</onup> -->
+          <!--   <ondown>109</ondown> -->
+          <!--   <textoffsetx>25</textoffsetx> -->
+          <!--   <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus> -->
+          <!--   <texturenofocus/> -->
+          <!-- </control> -->
+          <!-- Season -->
+
+          <control type="edit" id="109">
+            <!-- <top>70</top> -->
+            <left>0%</left>
+            <right>55%</right>
+            <height>80</height>
+            <align>left</align>
+            <width/>
+            <aligny>center</aligny>
+            <textcolor>B3FFFFFF</textcolor>
+            <focusedcolor>ffffffff</focusedcolor>
+            <font ff:style="normal">font13</font>
+            <!-- L(30264, 'Season:') -->
+            <label>$ADDON[plugin.video.fanfilm 30264]</label>
+            <!-- :translate=false: -->
+            <hinttext>Number</hinttext>
+            <onup>107</onup>
+            <ondown>110</ondown>
+            <textoffsetx>25</textoffsetx>
+            <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+            <texturenofocus/>
+          </control>
+          <ff:macro macro="badge.modified" key="season" top="15"/>
+          <!-- Episode -->
+          <control type="edit" id="110">
+            <!-- <top>70</top> -->
+            <left>55%</left>
+            <right>0</right>
+            <height>80</height>
+            <align>left</align>
+            <width/>
+            <aligny>center</aligny>
+            <textcolor>B3FFFFFF</textcolor>
+            <focusedcolor>ffffffff</focusedcolor>
+            <font ff:style="normal">font13</font>
+            <!-- L(30265, 'Episode:') -->
+            <label>$ADDON[plugin.video.fanfilm 30265]</label>
+            <!-- :translate=false: -->
+            <hinttext>Number</hinttext>
+            <onup>109</onup>
+            <ondown>131</ondown>  <!-- go to episode group button -->
+            <textoffsetx>25</textoffsetx>
+            <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+            <texturenofocus/>
+          </control>
+          <ff:macro macro="badge.modified" key="episode" top="15" left="54%"/>
+
+          <!-- Episode group -->
+          <control type="edit" id="111">
+            <!-- always disabled, only for display group name -->
+            <enable>false</enable>
+            <top>80</top>
+            <right>90</right>
+            <height>70</height>
+            <align>left</align>
+            <width/>
+            <aligny>center</aligny>
+            <textcolor>B3FFFFFF</textcolor>
+            <disabledcolor>B3FFFFFF</disabledcolor>
+            <focusedcolor>ffffffff</focusedcolor>
+            <font ff:style="normal">font13</font>
+            <!-- L(30541, 'Episode group') -->
+            <label>$ADDON[plugin.video.fanfilm 30541]</label>
+            <onup>110</onup>
+            <ondown>31</ondown>
+            <onleft>131</onleft>
+            <onright>131</onright>
+            <textoffsetx>25</textoffsetx>
+            <texturefocus border="10" colordiffuse="FF1A232A">white.png</texturefocus>
+            <texturenofocus/>
+          </control>
+          <ff:macro macro="alternatives_button" n="11" top="85" onup="110" ondown="31" onleft="131" onright="131"/>
+          <ff:macro macro="badge.modified" key="episode_group" top="95"/>
+        </control>
+
+      </control>
+
+      <!-- buttons -->
+      <control type="group" id="30">
+        <bottom>30</bottom>
+        <centerleft>50%</centerleft>
+        <left/>
+        <top/>
+        <width>1300</width>
+        <height>70</height>
+
+        <!-- button 1: Scan -->
+        <control type="button" id="31">
+          <width>250</width>
+          <left>780</left>
+          <top/>
+          <align>center</align>
+          <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+          <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+          <colordiffuse/>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <!-- L(30266, 'Scan') -->
+          <label>$ADDON[plugin.video.fanfilm 30266]</label>
+          <textwidth>230</textwidth>
+          <onright>32</onright>
+          <onleft>33</onleft>
+          <onup>131</onup>
+          <ondown>101</ondown>
+        </control>
+        <!-- button 2: Cancel -->
+        <control type="button" id="32">
+          <width>250</width>
+          <left>1050</left>
+          <top/>
+          <align>center</align>
+          <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+          <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+          <colordiffuse/>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <label text="Cancel">$LOCALIZE[222]</label>
+          <textwidth>230</textwidth>
+          <onleft>31</onleft>
+          <onup>131</onup>
+          <ondown>101</ondown>
+        </control>
+        <!-- button 3: Defaults -->
+        <control type="button" id="33">
+          <width>250</width>
+          <left>0</left>
+          <top/>
+          <align>center</align>
+          <texturenofocus border="6">dialogs/button-nofocus.png</texturenofocus>
+          <texturefocus border="6">dialogs/button-focus.png</texturefocus>
+          <colordiffuse/>
+          <textcolor>B3FFFFFF</textcolor>
+          <focusedcolor>ffffffff</focusedcolor>
+          <font ff:style="normal">font13</font>
+          <label text="Defaults">$LOCALIZE[409]</label>
+          <textwidth>230</textwidth>
+          <onright>31</onright>
+          <onup>131</onup>
+          <ondown>101</ondown>
+        </control>
+
+      </control>
+    </control>
+  </controls>
+</window><!--
+ vim:sw=2:ts=2:sts=2:
+-->
