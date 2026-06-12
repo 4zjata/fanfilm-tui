@@ -72,6 +72,9 @@ class FanFilmApp(App):
         background: $panel;
         margin-top: 3;
     }
+    CommandPalette #--results {
+        overlay: none;
+    }
     """
 
     COMMANDS = {FanFilmCommands}
