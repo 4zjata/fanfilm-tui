@@ -1030,16 +1030,22 @@ class sources:
                 dbcur = dbcon.cursor()
                 self._init_sources_db(dbcur)
 
+                cache_imdb = imdb
+                if not cache_imdb or cache_imdb == "0":
+                    tmdb = ffitem.getVideoInfoTag().getUniqueID('tmdb')
+                    if tmdb:
+                        cache_imdb = f"tmdb:{tmdb}"
+
                 """ Fix to stop items passed with a 0 IMDB id pulling old unrelated sources from the database. """
                 if imdb == "0":
                     try:
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcon.commit()
                     except Exception:
@@ -1050,11 +1056,11 @@ class sources:
                     try:
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcon.commit()
                     except Exception:
@@ -1063,7 +1069,7 @@ class sources:
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         match = dbcur.fetchone()
                         t1 = int(re.sub("[^0-9]", "", str(match[5])))
@@ -1085,7 +1091,7 @@ class sources:
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         url = dbcur.fetchone()
                         url = literal_eval(url[4])
@@ -1109,11 +1115,11 @@ class sources:
                     if url is not None and not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcur.execute(
                             "INSERT INTO rel_url Values (?, ?, ?, ?, ?)",
-                            (source, imdb, "", "", repr(url)),
+                            (source, cache_imdb, "", "", repr(url)),
                         )
                         dbcon.commit()
                 except Exception:
@@ -1151,13 +1157,13 @@ class sources:
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcur.execute(
                             "INSERT INTO rel_src Values (?, ?, ?, ?, ?, ?)",
                             (
                                 source,
-                                imdb,
+                                cache_imdb,
                                 "",
                                 "",
                                 repr([src.as_json() for src in sources]),
@@ -1197,16 +1203,22 @@ class sources:
             with database.connect(self.sourceFile) as dbcon:
                 dbcur = dbcon.cursor()
                 self._init_sources_db(dbcur)
+
+                cache_imdb = imdb
+                if not cache_imdb or cache_imdb == "0":
+                    if tmdb:
+                        cache_imdb = f"tmdb:{tmdb}"
+
                 if source in const.sources_dialog.library_cache:
                     # fix pokazania już pobranych przy włączonym cache
                     try:
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         dbcon.commit()
                     except Exception:
@@ -1216,7 +1228,7 @@ class sources:
                         sources = []
                         dbcur.execute(
                             "SELECT * FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         match = dbcur.fetchone()
                         t1 = int(re.sub("[^0-9]", "", str(match[5])))
@@ -1238,7 +1250,7 @@ class sources:
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         url = dbcur.fetchone()
                         url = literal_eval(url[4])
@@ -1265,11 +1277,11 @@ class sources:
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, "", "")
+                            % (source, cache_imdb, "", "")
                         )
                         dbcur.execute(
                             "INSERT INTO rel_url Values (?, ?, ?, ?, ?)",
-                            (source, imdb, "", "", repr(url)),
+                            (source, cache_imdb, "", "", repr(url)),
                         )
                         dbcon.commit()
                 except Exception:
@@ -1280,7 +1292,7 @@ class sources:
                     try:
                         dbcur.execute(
                             "SELECT * FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         ep_url = dbcur.fetchone()
                         ep_url = literal_eval(ep_url[4])
@@ -1308,11 +1320,11 @@ class sources:
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         dbcur.execute(
                             "INSERT INTO rel_url Values (?, ?, ?, ?, ?)",
-                            (source, imdb, season, episode, repr(ep_url)),
+                            (source, cache_imdb, season, episode, repr(ep_url)),
                         )
                         dbcon.commit()
                 except Exception:
@@ -1348,13 +1360,13 @@ class sources:
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
-                            % (source, imdb, season, episode)
+                            % (source, cache_imdb, season, episode)
                         )
                         dbcur.execute(
                             "INSERT INTO rel_src Values (?, ?, ?, ?, ?, ?)",
                             (
                                 source,
-                                imdb,
+                                cache_imdb,
                                 season,
                                 episode,
                                 repr([src.as_json() for src in sources]),
