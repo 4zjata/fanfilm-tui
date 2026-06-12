@@ -30,37 +30,56 @@ class CloudflareCookieHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"[TUI_SERVER] Cookies names: {[c.get('name') for c in cookies]}")
                 print(f"[TUI_SERVER] UA: {ua}")
                 
-                # Find cf_clearance cookie
-                cf_cookie = next((c for c in cookies if c.get('name') == 'cf_clearance'), None)
+                from const import const
+                from fnmatch import fnmatch
+                host = data.get('host')
                 
-                if cf_cookie and ua:
-                    host_lower = data.get('host', '').lower()
-                    prefix = None
-                    if 'cda-hd' in host_lower:
-                        prefix = 'cdahd'
-                    elif 'zaluknij' in host_lower:
-                        prefix = 'zaluknij'
-                    elif 'obejrzyj' in host_lower:
-                        prefix = 'obejrzyj'
-                    elif 'filmyonline' in host_lower:
-                        prefix = 'filmyonline'
-                    elif any(domain in host_lower for domain in ('vidlink', 'storm', 'megacloud')):
-                        prefix = 'vidlink'
-                    
-                    if prefix:
-                        settings.set(f"{prefix}.cookies_cf", cf_cookie.get('value', ''))
-                        settings.set(f"{prefix}.cf_clearance", cf_cookie.get('value', ''))
-                        settings.set(f"{prefix}.user_agent", ua)
-                        print(f"[TUI_SERVER] Successfully updated settings for prefix: {prefix}")
-                        
-                        if hasattr(self.server, 'app'):
-                            self.server.app.call_from_thread(
-                                self.server.app.notify,
-                                f"Zaktualizowano ciasteczka dla {prefix}",
-                                severity="information"
-                            )
-                else:
-                    print("[TUI_SERVER] Missing cf_clearance cookie or User-Agent string.")
+                settings_count = 0
+                changed = set()
+                
+                if host:
+                    for host_def, conv in const.tune.service.web_server.cookies.items():
+                        # Support wildcard or pattern matching like fnmatch
+                        if fnmatch(host.lower(), host_def.lower()) if isinstance(host_def, str) else host_def.fullmatch(host):
+                            cookies_dict = {c.get('name'): c.get('value') for c in cookies if c.get('name') and c.get('value')}
+                            
+                            for cookie_name, settings_name in conv.items():
+                                if cookie_name == ':UA' or cookie_name == ':user_agent':
+                                    if ua:
+                                        if ua != settings.getString(settings_name):
+                                            changed.add(settings_name)
+                                        settings.set(settings_name, ua)
+                                        settings_count += 1
+                                elif cookie_name.startswith(':'):
+                                    meta_val = data.get(cookie_name[1:])
+                                    if meta_val:
+                                        if meta_val != settings.getString(settings_name):
+                                            changed.add(settings_name)
+                                        settings.set(settings_name, meta_val)
+                                        settings_count += 1
+                                else:
+                                    if cookie_name in cookies_dict:
+                                        cookie_val = cookies_dict[cookie_name]
+                                        if cookie_val != settings.getString(settings_name):
+                                            changed.add(settings_name)
+                                        settings.set(settings_name, cookie_val)
+                                        settings_count += 1
+                                        # For backward compatibility, save both .cookies_cf and .cf_clearance if one is mapped
+                                        if settings_name.endswith('.cookies_cf'):
+                                            alt_name = settings_name.replace('.cookies_cf', '.cf_clearance')
+                                            settings.set(alt_name, cookie_val)
+                                        elif settings_name.endswith('.cf_clearance'):
+                                            alt_name = settings_name.replace('.cf_clearance', '.cookies_cf')
+                                            settings.set(alt_name, cookie_val)
+                
+                if changed or data.get('forced_by_user'):
+                    print(f"[TUI_SERVER] Changed settings: {', '.join(sorted(changed))}")
+                    if hasattr(self.server, 'app'):
+                        self.server.app.call_from_thread(
+                            self.server.app.notify,
+                            f"Zaktualizowano dane dla {host}",
+                            severity="information"
+                        )
                         
                 self.send_response(200)
                 self.send_header('Access-Control-Allow-Origin', '*')
