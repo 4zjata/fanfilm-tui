@@ -17,9 +17,12 @@ class FanFilmCommands(Provider):
         ]
         
         for name, callback in commands:
-            score = matcher.match(name)
-            if score > 0:
-                yield Hit(score, matcher.highlight(name), callback, help="Nawigacja")
+            if not query:
+                yield Hit(1.0, name, callback, help="Nawigacja")
+            else:
+                score = matcher.match(name)
+                if score > 0:
+                    yield Hit(score, matcher.highlight(name), callback, help="Nawigacja")
 
 class FanFilmApp(App):
     CSS = """
@@ -60,7 +63,8 @@ class FanFilmApp(App):
     CommandPalette {
         background: rgba(0, 0, 0, 0.4);
     }
-    CommandPalette > Vertical {
+    CommandPalette.-ready > Vertical {
+        visibility: visible;
         width: 60%;
         height: auto;
         max-height: 15;
@@ -70,7 +74,7 @@ class FanFilmApp(App):
     }
     """
 
-    COMMANDS = App.COMMANDS | {FanFilmCommands}
+    COMMANDS = {FanFilmCommands}
     BINDINGS = [
         ("q", "quit", "Wyjście"),
         ("ctrl+p", "command_palette", "Menu"),
