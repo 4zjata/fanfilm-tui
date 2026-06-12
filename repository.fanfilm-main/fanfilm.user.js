@@ -9,6 +9,8 @@
 // @match        http*://vidlink.pro/*
 // @match        http*://storm.vodvidl.site/*
 // @match        http*://megacloud.live/*
+// @match        http*://obejrzyj.to/*
+// @match        http*://filmyonline.cc/*
 // @include      http*://ekino*.*/*
 // @include      http*://net*.cc/*
 // @icon         https://raw.githubusercontent.com/fanfilm-pl/repository.fanfilm/refs/heads/main/favicon.png
@@ -147,17 +149,48 @@ function fanfilmLoadSites(host) {
 async function fanfilmCookies(options)
 {
     // Pobranie cookies
-    let cookies = await GM.cookie.list({url: location.hostname, partitionKey: {}});
+    let cookies = [];
+    try {
+        cookies = await GM.cookie.list({url: window.location.origin, partitionKey: {}});
+    } catch (e) {
+        try {
+            cookies = await GM.cookie.list({url: window.location.origin});
+        } catch (err) {
+            console.warn("[FanFilm] Error listing cookies by url:", err);
+        }
+    }
+
+    if (!cookies || cookies.length === 0) {
+        try {
+            cookies = await GM.cookie.list({domain: location.hostname, partitionKey: {}});
+        } catch (e) {
+            try {
+                cookies = await GM.cookie.list({domain: location.hostname});
+            } catch (err) {
+                console.warn("[FanFilm] Error listing cookies by domain:", err);
+            }
+        }
+    }
+
+    // Fallback: list all cookies for the current document context if possible
+    if (!cookies || cookies.length === 0) {
+        try {
+            cookies = await GM.cookie.list({});
+        } catch (e) {
+            console.warn("[FanFilm] Error listing all cookies:", e);
+        }
+    }
+
     if (!options) {
         options = {}
     }
     let data = {
         host: location.hostname,
         user_agent: navigator.userAgent,
-        cookies: cookies,
+        cookies: cookies || [],
     };
-    // console.log("[FanFilm] Zebrane dane:", data);
-    return data
+    console.log("[FanFilm] Zebrane dane cookies:", cookies);
+    return data;
 }
 
 async function fanfilmSendOne(host, options)
