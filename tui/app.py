@@ -1,11 +1,21 @@
 import os
 from textual.app import App
-from textual.command import Provider, Hit
+from textual.command import Provider, Hit, DiscoveryHit
 
 from lib.ff.settings import settings
 from tui.screens.search import SearchScreen
 
 class FanFilmCommands(Provider):
+    async def discover(self):
+        commands = [
+            ("Szukaj (Search)", self.app.action_goto_search),
+            ("Ustawienia (Settings)", self.app.action_goto_settings),
+            ("Pobierane (Downloads)", self.app.action_goto_downloads),
+            ("Wyjście (Quit)", self.app.action_quit),
+        ]
+        for name, callback in commands:
+            yield DiscoveryHit(name, callback, help="Nawigacja")
+
     async def search(self, query: str):
         matcher = self.matcher(query)
         
@@ -17,12 +27,9 @@ class FanFilmCommands(Provider):
         ]
         
         for name, callback in commands:
-            if not query:
-                yield Hit(1.0, name, callback, help="Nawigacja")
-            else:
-                score = matcher.match(name)
-                if score > 0:
-                    yield Hit(score, matcher.highlight(name), callback, help="Nawigacja")
+            score = matcher.match(name)
+            if score > 0:
+                yield Hit(score, matcher.highlight(name), callback, help="Nawigacja")
 
 class FanFilmApp(App):
     CSS = """
