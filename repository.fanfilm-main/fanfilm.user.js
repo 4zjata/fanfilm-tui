@@ -158,10 +158,10 @@ async function fanfilmCookies(options)
     // Pobranie cookies
     let cookies = [];
     try {
-        cookies = await GM.cookie.list({url: window.location.origin, partitionKey: {}});
+        cookies = await GM.cookie.list({url: window.location.href, partitionKey: {}});
     } catch (e) {
         try {
-            cookies = await GM.cookie.list({url: window.location.origin});
+            cookies = await GM.cookie.list({url: window.location.href});
         } catch (err) {
             console.warn("[FanFilm] Error listing cookies by url:", err);
         }
