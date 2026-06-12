@@ -591,6 +591,7 @@ class sources:
         # progress_dialog is now always created in _play() before calling get_sources()
         # If None, progress updates will be skipped (used for testing or external calls)
 
+        self.progress_dialog = progress_dialog
         self.prepareSources()
 
         # -------------------------------------------------------------------------------------------------------- XXX XXX XXX
@@ -1015,10 +1016,18 @@ class sources:
             yield
         except Exception as exc:
             from .log_utils import CallerInfo, traceback_string
+            import traceback
             x = CallerInfo.info(n=2)
             z = traceback_string(exc.__traceback__, stack_limit=1, ffonly=True)
+            tb = traceback.format_exc()
             fflog(f'Exception in provider {call.__class__.__module__}.{call.__class__.__name__}: {exc!r}', stack_depth=3)
             fflog(f' --- {x}, {x.module_name} --- \n{z}')
+            fflog(f'[SCRAPER_TRACEBACK] Provider {call.__class__.__module__}.{call.__class__.__name__} failed:\n{tb}', internal=True)
+            
+            if hasattr(self, 'progress_dialog') and self.progress_dialog:
+                provider_name = call.__class__.__module__.split('.')[-1]
+                self.progress_dialog.record_status(provider_name, f"Błąd: {exc!r}", is_error=True)
+            raise
 
     def getMovieSource(self, title, localtitle, aliases, year, imdb, source, call: ProviderProtocol, from_cache=False, *, ffitem: FFItem):
         fflog.debug(f'getMovieSource {source=}')
@@ -1154,6 +1163,9 @@ class sources:
                         sources = [Source.from_provider_dict(provider=source, ffitem=ffitem, item=it) for it in sources]
                     with self.lock:
                         self.sources.extend(sources)
+                    if hasattr(self, 'progress_dialog') and self.progress_dialog:
+                        status_msg = f"OK ({len(sources)} źródeł)" if sources else "Brak źródeł"
+                        self.progress_dialog.record_status(source, status_msg)
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"
@@ -1357,6 +1369,9 @@ class sources:
                     sources = [Source.from_provider_dict(provider=source, ffitem=ffitem, item=it) for it in sources]
                     with self.lock:
                         self.sources.extend(sources)
+                    if hasattr(self, 'progress_dialog') and self.progress_dialog:
+                        status_msg = f"OK ({len(sources)} źródeł)" if sources else "Brak źródeł"
+                        self.progress_dialog.record_status(source, status_msg)
                     if not self.DEBUG_SINGLE_PROVIDER:  # use DB if not debugging single provider
                         dbcur.execute(
                             "DELETE FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'"

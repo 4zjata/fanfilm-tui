@@ -75,6 +75,17 @@ class ScrapingScreen(Screen):
 
     def scraping_finished(self, sf, found):
         if self.timer: self.timer.stop()
+        
+        from lib.ff.settings import settings
+        is_advanced = settings.getString("tui.advanced_mode") == "true"
+        
+        if is_advanced:
+            from tui.screens.scraper_status import ScraperStatusScreen
+            self.app.switch_screen(ScraperStatusScreen(self.dialog.scraper_statuses, found, self.queue))
+        else:
+            self.proceed_after_scraping(found)
+
+    def proceed_after_scraping(self, found):
         if not found:
             self.notify("Nie znaleziono żadnych źródeł dla tej pozycji.", severity="warning")
             if len(self.queue) > 1:
@@ -87,7 +98,6 @@ class ScrapingScreen(Screen):
         found.sort(key=rate_source, reverse=True)
         if len(self.queue) > 1:
             from tui.screens.download import DownloadScreen
-            # Auto-select best source for full season
             self.app.switch_screen(DownloadScreen(found, self.queue))
         else:
             from tui.screens.source_select import SourceSelectScreen

@@ -43,7 +43,7 @@ class FanFilmApp(App):
     #poster { width: 28; height: 21; }
     .title-label { text-style: bold; color: cyan; margin-bottom: 1; }
     #scraping-pane, #download-pane { align: center middle; content-align: center middle; padding: 2; height: 100%; }
-    #downloads-pane { padding: 1; height: 100%; }
+    #downloads-pane, #scraper-status-pane { padding: 1; height: 100%; }
     ProgressBar { width: 80%; margin: 1; }
     
     SettingsScreen {

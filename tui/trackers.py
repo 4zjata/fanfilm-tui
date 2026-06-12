@@ -7,14 +7,25 @@ class TUIProgressDialog:
         self.providers = []
         self.cancelled = False
         self.finished = False
+        self.scraper_statuses = {} # provider_name -> status_str
+        
     def update(self, percent, message, providers=None):
         self.percent = percent
         self.message = message
         if providers is not None:
             self.providers = providers
+            # Initialize provider status as running if not present
+            for p in providers:
+                p_name = p.lower()
+                if p_name not in self.scraper_statuses:
+                    self.scraper_statuses[p_name] = "Przeszukiwanie..."
+                    
     def update_time(self, elapsed, total): pass
     def iscanceled(self): return self.cancelled
     def close(self): self.finished = True
+    def record_status(self, provider_name, status, is_error=False):
+        p_name = provider_name.lower()
+        self.scraper_statuses[p_name] = status
 
 class DownloadProgressTracker:
     def __init__(self):

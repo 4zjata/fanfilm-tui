@@ -47,6 +47,13 @@ class SettingsScreen(Screen):
             ]
             yield Select(theme_options, id="theme-select", allow_blank=False)
             
+            yield Label("Tryb zaawansowany scraperów:")
+            adv_options = [
+                ("Wyłączony (Standardowy)", "false"),
+                ("Włączony (Pokazuj błędy)", "true")
+            ]
+            yield Select(adv_options, id="advanced-select", allow_blank=False)
+            
             with Horizontal(id="settings-buttons"):
                 yield Button("Zapisz", variant="success", id="save-btn")
                 yield Button("Anuluj", variant="error", id="cancel-btn")
@@ -62,11 +69,15 @@ class SettingsScreen(Screen):
         theme_val = settings.getString("tui.theme")
         if not theme_val: theme_val = "textual-dark"
         
+        adv_val = settings.getString("tui.advanced_mode")
+        if not adv_val: adv_val = "false"
+        
         self.query_one("#lang-select", Select).value = lang_val
         self.query_one("#movie-path", Input).value = settings.getString("movie.download.path")
         self.query_one("#tv-path", Input).value = settings.getString("tv.download.path")
         self.query_one("#poster-select", Select).value = poster_val
         self.query_one("#theme-select", Select).value = theme_val
+        self.query_one("#advanced-select", Select).value = adv_val
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":
@@ -75,12 +86,14 @@ class SettingsScreen(Screen):
             tv_path = self.query_one("#tv-path", Input).value
             poster_val = self.query_one("#poster-select", Select).value
             theme_val = self.query_one("#theme-select", Select).value
+            adv_val = self.query_one("#advanced-select", Select).value
             
             settings.set("providers.lang", lang_val)
             settings.set("movie.download.path", movie_path)
             settings.set("tv.download.path", tv_path)
             settings.set("tui.poster.type", poster_val)
             settings.set("tui.theme", theme_val)
+            settings.set("tui.advanced_mode", adv_val)
             
             # Re-run setup to re-configure enabled providers
             self.app.setup_settings()
