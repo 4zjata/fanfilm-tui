@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, DataTable
+from textual.widgets import Footer, DataTable
 
 from tui.screens.stream import StreamScreen
 from tui.screens.download import DownloadScreen
@@ -18,9 +18,8 @@ class SourceSelectScreen(Screen):
         self.queue = queue
 
     def compose(self) -> ComposeResult:
-        yield Header()
         yield DataTable(id="sources-table", cursor_type="row")
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         table = self.query_one(DataTable)

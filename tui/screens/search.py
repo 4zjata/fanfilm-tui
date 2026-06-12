@@ -72,7 +72,10 @@ class SearchScreen(BaseScreen):
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         idx = int(event.row_key.value)
-        self.query_one("#meta-panel").update_meta(self.results[idx])
+        item = self.results[idx]
+        if hasattr(self, "_meta_timer") and self._meta_timer:
+            self._meta_timer.stop()
+        self._meta_timer = self.set_timer(0.25, lambda: self.query_one("#meta-panel").update_meta(item))
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         idx = int(event.row_key.value)

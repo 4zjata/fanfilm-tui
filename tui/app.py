@@ -25,15 +25,49 @@ class FanFilmApp(App):
     CSS = """
     Screen { layout: vertical; }
     Horizontal { height: 1fr; }
-    #left-pane { width: 60%; border-right: solid cyan; padding: 1; }
+    #left-pane { width: 60%; border-right: tall $accent; padding: 1; overflow-y: auto; }
     #right-pane { width: 40%; padding: 1; }
     DataTable { height: 1fr; margin-top: 1; }
-    Input { dock: top; margin-bottom: 1; }
+    #search-input { margin-bottom: 1; }
     #poster-container { align: center middle; height: 1fr; margin-top: 1; }
     #poster { width: 28; height: 21; }
     .title-label { text-style: bold; color: cyan; margin-bottom: 1; }
     #scraping-pane, #download-pane { align: center middle; content-align: center middle; padding: 2; height: 100%; }
+    #downloads-pane { padding: 1; height: 100%; }
     ProgressBar { width: 80%; margin: 1; }
+    
+    #settings-pane {
+        padding: 1;
+        height: auto;
+    }
+    #settings-pane Label {
+        margin-top: 1;
+        margin-bottom: 0;
+        text-style: bold;
+        color: $text;
+    }
+    #settings-pane Select {
+        margin-bottom: 1;
+    }
+    #settings-pane Input {
+        margin-bottom: 1;
+    }
+    #settings-pane Button {
+        margin-top: 1;
+        margin-right: 1;
+    }
+    
+    CommandPalette {
+        background: rgba(0, 0, 0, 0.4);
+    }
+    CommandPalette > Vertical {
+        width: 60%;
+        height: auto;
+        max-height: 15;
+        border: double $accent;
+        background: $panel;
+        margin-top: 3;
+    }
     """
 
     COMMANDS = App.COMMANDS | {FanFilmCommands}
@@ -43,6 +77,11 @@ class FanFilmApp(App):
     ]
 
     def setup_settings(self):
+        if not settings.getString("tui.theme"):
+            settings.set("tui.theme", "textual-dark")
+        if not settings.getString("tui.poster.type"):
+            settings.set("tui.poster.type", "auto")
+
         if not settings.getString("movie.download.path") or not settings.getString("tv.download.path"):
             path = os.path.abspath("./downloads")
             os.makedirs(path, exist_ok=True)
@@ -91,6 +130,13 @@ class FanFilmApp(App):
         self.cf_server.start()
         
         self.setup_settings()
+        
+        # Load theme from settings
+        theme_val = settings.getString("tui.theme")
+        if not theme_val:
+            theme_val = "textual-dark"
+        self.theme = theme_val
+        
         self.push_screen(SearchScreen())
 
     def on_unmount(self):

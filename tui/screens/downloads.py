@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
-from textual.widgets import Label, DataTable, Header, Footer
+from textual.widgets import Label, DataTable, Footer
 
 from tui.trackers import dl_tracker
 
@@ -12,11 +12,10 @@ class DownloadsScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
         with Vertical(id="downloads-pane"):
             yield Label("Aktywne i Zakończone Pobierania", classes="title-label")
             yield DataTable(id="downloads-table", cursor_type="row")
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         table = self.query_one(DataTable)
