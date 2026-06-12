@@ -4,6 +4,7 @@ from textual.containers import Vertical
 from textual.widgets import Static
 
 from tui.helpers import get_truncated_plot, PosterRenderable
+from lib.ff.settings import settings
 
 class MetaPanel(Vertical):
     def update_meta(self, item):
@@ -33,6 +34,8 @@ class MetaPanel(Vertical):
     @work(thread=True, exclusive=True)
     def load_poster(self, url: str) -> None:
         try:
+            poster_type = settings.getString("tui.poster.type") or "auto"
+            
             import urllib.request
             import io
             from PIL import Image as PILImage
@@ -45,13 +48,24 @@ class MetaPanel(Vertical):
             # Parse using PIL
             img = PILImage.open(io.BytesIO(img_data)).convert("RGB")
             
-            # Try to load high-res textual-image widget
-            try:
-                from textual_image.widget import Image as TImage
-                widget = TImage(img, id="poster")
-            except (ImportError, ModuleNotFoundError):
-                # Fallback to ASCII art via PosterRenderable (using already downloaded img)
+            # Build the widget according to settings preference
+            if poster_type == "sixel":
+                from textual_image.widget import SixelImage
+                widget = SixelImage(img, id="poster")
+            elif poster_type == "kitty":
+                from textual_image.widget import TGPImage
+                widget = TGPImage(img, id="poster")
+            elif poster_type == "halfcell":
+                from textual_image.widget import HalfcellImage
+                widget = HalfcellImage(img, id="poster")
+            elif poster_type == "ascii":
                 widget = Static(PosterRenderable(img), id="poster")
+            else: # "auto"
+                try:
+                    from textual_image.widget import Image as TImage
+                    widget = TImage(img, id="poster")
+                except (ImportError, ModuleNotFoundError):
+                    widget = Static(PosterRenderable(img), id="poster")
                 
             # Mount the widget in the main thread
             self.app.call_from_thread(self._mount_widget, widget)
