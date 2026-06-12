@@ -86,14 +86,42 @@ class ScrapingScreen(Screen):
             self.proceed_after_scraping(found)
 
     def proceed_after_scraping(self, found):
+        cf_failed_providers = []
+        for name, status in self.dialog.scraper_statuses.items():
+            status_lower = str(status).lower()
+            if "403" in status_lower or "503" in status_lower or "forbidden" in status_lower or "cloudflare" in status_lower:
+                cf_failed_providers.append(name.upper())
+
         if not found:
-            self.notify("Nie znaleziono żadnych źródeł dla tej pozycji.", severity="warning")
-            if len(self.queue) > 1:
-                self.queue.pop(0)
-                self.app.switch_screen(ScrapingScreen(self.queue[0], self.queue))
+            if cf_failed_providers:
+                from tui.screens.alert import AlertScreen
+                msg = (
+                    f"Wykryto blokadę Cloudflare (błąd 403/503) w serwisach: {', '.join(cf_failed_providers)}.\n\n"
+                    "Prawdopodobnie wygasło ciasteczko cf_clearance lub zmienił się Twój adres IP.\n\n"
+                    "Uruchom przeglądarkę, wejdź na te strony i wyślij nowe ciasteczka do TUI."
+                )
+                def on_alert_close(_=None):
+                    if len(self.queue) > 1:
+                        self.queue.pop(0)
+                        self.app.switch_screen(ScrapingScreen(self.queue[0], self.queue))
+                    else:
+                        self.app.pop_screen()
+                self.app.push_screen(AlertScreen(msg), on_alert_close)
             else:
-                self.app.pop_screen()
+                self.notify("Nie znaleziono żadnych źródeł dla tej pozycji.", severity="warning")
+                if len(self.queue) > 1:
+                    self.queue.pop(0)
+                    self.app.switch_screen(ScrapingScreen(self.queue[0], self.queue))
+                else:
+                    self.app.pop_screen()
             return
+
+        if cf_failed_providers:
+            self.notify(
+                f"Blokada Cloudflare (403/503) w: {', '.join(cf_failed_providers)}. Sprawdź ciasteczka!",
+                severity="error",
+                timeout=7.0
+            )
 
         found.sort(key=rate_source, reverse=True)
         if len(self.queue) > 1:
