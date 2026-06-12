@@ -122,7 +122,7 @@ class StreamScreen(Screen):
                                 def handle_yesno(result):
                                     if result:
                                         from tui.screens.scraping import ScrapingScreen
-                                        self.app.switch_screen(ScrapingScreen([next_item]))
+                                        self.app.switch_screen(ScrapingScreen(next_item))
                                     else:
                                         self.app.pop_screen()
                                         
