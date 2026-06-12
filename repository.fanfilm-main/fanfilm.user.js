@@ -155,41 +155,55 @@ function fanfilmLoadSites(host) {
 
 async function fanfilmCookies(options)
 {
-    // Pobranie cookies
     let cookies = [];
-    try {
-        cookies = await GM.cookie.list({url: window.location.href, partitionKey: {}});
-    } catch (e) {
+    let queryUrl = "https://" + location.hostname + "/";
+    
+    let tryQueries = [
+        { url: queryUrl, partitionKey: { topLevelSite: queryUrl } },
+        { url: queryUrl, partitionKey: {} },
+        { url: queryUrl },
+        { domain: location.hostname, partitionKey: { topLevelSite: queryUrl } },
+        { domain: location.hostname, partitionKey: {} },
+        { domain: location.hostname },
+        { partitionKey: {} },
+        {}
+    ];
+
+    for (let q of tryQueries) {
         try {
-            cookies = await GM.cookie.list({url: window.location.href});
-        } catch (err) {
-            console.warn("[FanFilm] Error listing cookies by url:", err);
+            let res = await GM.cookie.list(q);
+            if (res && res.length > 0) {
+                // Sprawdzamy czy mamy cf_clearance, jeśli tak to przerywamy
+                let hasCf = res.some(c => c.name === 'cf_clearance');
+                cookies = res;
+                if (hasCf) {
+                    console.log("[FanFilm] Pobrane cookies (z cf_clearance) zapytaniem:", q);
+                    break;
+                }
+            }
+        } catch (e) {
+            console.warn("[FanFilm] Błąd GM.cookie.list dla zapytania:", q, e);
         }
     }
 
-    if (!cookies || cookies.length === 0) {
-        try {
-            cookies = await GM.cookie.list({domain: location.hostname, partitionKey: {}});
-        } catch (e) {
-            try {
-                cookies = await GM.cookie.list({domain: location.hostname});
-            } catch (err) {
-                console.warn("[FanFilm] Error listing cookies by domain:", err);
+    if (!cookies || cookies.length === 0 || !cookies.some(c => c.name === 'cf_clearance')) {
+        if (document.cookie) {
+            let docCookies = document.cookie.split(';').map(c => {
+                let parts = c.split('=');
+                return {
+                    name: parts[0].trim(),
+                    value: parts.slice(1).join('=').trim()
+                };
+            });
+            if (docCookies.length > 0) {
+                cookies = docCookies;
+                console.log("[FanFilm] Fallback do document.cookie:", cookies);
             }
         }
     }
 
-    // Fallback: list all cookies for the current document context if possible
-    if (!cookies || cookies.length === 0) {
-        try {
-            cookies = await GM.cookie.list({});
-        } catch (e) {
-            console.warn("[FanFilm] Error listing all cookies:", e);
-        }
-    }
-
     if (!options) {
-        options = {}
+        options = {};
     }
     let data = {
         host: location.hostname,
