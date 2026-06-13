@@ -13,6 +13,9 @@ class HomeScreen(BaseScreen):
         ("escape", "app.pop_screen", "Powrót"),
         ("m", "focus_menu", "Menu"),
         ("t", "focus_table", "Tabela"),
+        ("f", "filter_movies", "Filmy"),
+        ("s", "filter_shows", "Seriale"),
+        ("a", "filter_all", "Wszystko"),
     ]
 
     DEFAULT_CSS = """
@@ -54,6 +57,7 @@ class HomeScreen(BaseScreen):
         self.results = []
         self.progress_map = {}
         self.start_search = start_search
+        self.media_filter = "all"
 
         # Infinite scroll state
         self.current_page = 1
@@ -67,17 +71,11 @@ class HomeScreen(BaseScreen):
                 yield OptionList(
                     Option("🏠\uFE0F Start", id="menu-trending"),
                     None,
-                    Option("🍿\uFE0F Popularne Filmy", id="menu-movies"),
+                    Option("🍿\uFE0F Popularne", id="menu-popular"),
                     None,
-                    Option("⭐\uFE0F Najlepsze Filmy", id="menu-top-rated-movies"),
+                    Option("⭐\uFE0F Najlepsze", id="menu-top-rated"),
                     None,
-                    Option("🎭\uFE0F Gatunki Filmów", id="menu-movie-genres"),
-                    None,
-                    Option("📺\uFE0F Popularne Seriale", id="menu-shows"),
-                    None,
-                    Option("⭐\uFE0F Najlepsze Seriale", id="menu-top-rated-shows"),
-                    None,
-                    Option("🎭\uFE0F Gatunki Seriali", id="menu-show-genres"),
+                    Option("🎭\uFE0F Gatunki", id="menu-genres"),
                     None,
                     Option("⏳\uFE0F W toku", id="menu-progress"),
                     None,
@@ -98,7 +96,7 @@ class HomeScreen(BaseScreen):
         # Select initial option
         option_list = self.query_one("#sidebar-list", OptionList)
         if self.start_search:
-            option_list.highlighted_index = 16  # Option index for Szukaj
+            option_list.highlighted_index = 10  # Option index for Szukaj
             self.current_menu_id = "menu-search"
             inp.display = True
             inp.focus()
@@ -132,18 +130,12 @@ class HomeScreen(BaseScreen):
             inp.display = False
             if opt_id == "menu-trending":
                 self.load_trending()
-            elif opt_id == "menu-movies":
-                self.load_movies()
-            elif opt_id == "menu-shows":
-                self.load_shows()
-            elif opt_id == "menu-top-rated-movies":
-                self.load_top_rated_movies()
-            elif opt_id == "menu-top-rated-shows":
-                self.load_top_rated_shows()
-            elif opt_id == "menu-movie-genres":
-                self.load_movie_genres()
-            elif opt_id == "menu-show-genres":
-                self.load_show_genres()
+            elif opt_id == "menu-popular":
+                self.load_popular()
+            elif opt_id == "menu-top-rated":
+                self.load_top_rated()
+            elif opt_id == "menu-genres":
+                self.load_genres()
             elif opt_id == "menu-progress":
                 self.load_progress()
 
@@ -172,78 +164,75 @@ class HomeScreen(BaseScreen):
             self.app.call_from_thread(self.load_failed, str(e), "menu-trending")
 
     @work(thread=True)
-    def load_movies(self):
+    def load_popular(self):
         try:
             from lib.ff.tmdb import tmdb
-            results = []
+            movies = []
+            shows = []
             for p in (1, 2):
-                results.extend(list(tmdb.trending('movie', 'week', page=p)))
-            self.app.call_from_thread(self.show_results, results, "menu-movies", page=2)
-        except Exception as e:
-            import traceback
-            traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-movies")
-
-    @work(thread=True)
-    def load_shows(self):
-        try:
-            from lib.ff.tmdb import tmdb
+                movies.extend(list(tmdb.discover_list('movie', 'popular', page=p))[:15])
+                shows.extend(list(tmdb.discover_list('show', 'popular', page=p))[:15])
             results = []
-            for p in (1, 2):
-                results.extend(list(tmdb.trending('show', 'week', page=p)))
-            self.app.call_from_thread(self.show_results, results, "menu-shows", page=2)
+            for m, s in zip(movies, shows):
+                results.append(m)
+                results.append(s)
+            if len(movies) > len(shows):
+                results.extend(movies[len(shows):])
+            elif len(shows) > len(movies):
+                results.extend(shows[len(movies):])
+            
+            self.app.call_from_thread(self.show_results, results, "menu-popular", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-shows")
+            self.app.call_from_thread(self.load_failed, str(e), "menu-popular")
 
     @work(thread=True)
-    def load_top_rated_movies(self):
+    def load_top_rated(self):
         try:
             from lib.ff.tmdb import tmdb
+            movies = []
+            shows = []
+            for p in (1, 2):
+                movies.extend(list(tmdb.discover_list('movie', 'top_rated', page=p))[:15])
+                shows.extend(list(tmdb.discover_list('show', 'top_rated', page=p))[:15])
             results = []
-            for p in (1, 2):
-                results.extend(list(tmdb.discover_list('movie', 'top_rated', page=p)))
-            self.app.call_from_thread(self.show_results, results, "menu-top-rated-movies", page=2)
+            for m, s in zip(movies, shows):
+                results.append(m)
+                results.append(s)
+            if len(movies) > len(shows):
+                results.extend(movies[len(shows):])
+            elif len(shows) > len(movies):
+                results.extend(shows[len(movies):])
+            
+            self.app.call_from_thread(self.show_results, results, "menu-top-rated", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-top-rated-movies")
+            self.app.call_from_thread(self.load_failed, str(e), "menu-top-rated")
 
     @work(thread=True)
-    def load_top_rated_shows(self):
+    def load_genres(self):
         try:
             from lib.ff.tmdb import tmdb
+            movie_genres = list(tmdb.genres('movie'))
+            show_genres = list(tmdb.genres('show'))
+            
             results = []
-            for p in (1, 2):
-                results.extend(list(tmdb.discover_list('show', 'top_rated', page=p)))
-            self.app.call_from_thread(self.show_results, results, "menu-top-rated-shows", page=2)
+            for g in movie_genres:
+                g_copy = g.copy()
+                g_copy['media_type'] = 'movie'
+                results.append(g_copy)
+            for g in show_genres:
+                g_copy = g.copy()
+                g_copy['media_type'] = 'show'
+                results.append(g_copy)
+                
+            self.app.call_from_thread(self.show_genres, results, "menu-genres")
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-top-rated-shows")
-
-    @work(thread=True)
-    def load_movie_genres(self):
-        try:
-            from lib.ff.tmdb import tmdb
-            genres = list(tmdb.genres('movie'))
-            self.app.call_from_thread(self.show_genres, genres, "menu-movie-genres")
-        except Exception as e:
-            import traceback
-            traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-movie-genres")
-
-    @work(thread=True)
-    def load_show_genres(self):
-        try:
-            from lib.ff.tmdb import tmdb
-            genres = list(tmdb.genres('show'))
-            self.app.call_from_thread(self.show_genres, genres, "menu-show-genres")
-        except Exception as e:
-            import traceback
-            traceback.print_exc(file=sys.stderr)
-            self.app.call_from_thread(self.load_failed, str(e), "menu-show-genres")
+            self.app.call_from_thread(self.load_failed, str(e), "menu-genres")
 
     @work(thread=True)
     def load_genre_results(self, media_type, genre_id, genre_name):
@@ -330,28 +319,41 @@ class HomeScreen(BaseScreen):
         table.clear(columns=True)
         table.add_columns("Tytuł", "Rok", "Typ")
 
-    def show_results(self, results, menu_id, progress_map=None, page=1):
-        if self.current_menu_id != menu_id:
-            return
-            
-        self.results = results
-        self.progress_map = progress_map or {}
-        self.current_page = page
-        self.prepare_media_table()
+    def update_table_rows(self) -> None:
         table = self.query_one("#results-table", DataTable)
+        table.clear()
         
-        for i, item in enumerate(results):
+        # Row 0 is the back option in genre results mode
+        if self.current_menu_id.startswith("genre-"):
+            table.add_row(
+                "⬅️ Powrót do listy gatunków",
+                "—",
+                "—",
+                key="0"
+            )
+            
+        for i, item in enumerate(self.results):
+            if item is None:
+                continue
+                
+            # Filter checks
+            if hasattr(item, 'ref'):
+                is_movie = item.ref.is_movie
+                if self.media_filter == "movie" and not is_movie:
+                    continue
+                if self.media_filter == "show" and is_movie:
+                    continue
+            
             itype = "Film" if item.ref.is_movie else "Serial"
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
-            # Formatting title: if episode, show show title and SxxExx
             title = item.title
             if item.ref.is_episode:
                 show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
                 title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
                 
-            if menu_id == "menu-progress":
+            if self.current_menu_id == "menu-progress":
                 pct = self.progress_map.get(str(i), "0%")
                 title = f"{title} ({pct})"
                 
@@ -364,22 +366,32 @@ class HomeScreen(BaseScreen):
             
         inp = self.query_one("#search-input", Input)
         inp.disabled = False
-        if menu_id != "menu-search" and len(results) > 0:
+        if self.current_menu_id != "menu-search" and table.row_count > 0:
             table.focus()
 
-    def show_genres(self, genres, menu_id):
+    def show_results(self, results, menu_id, progress_map=None, page=1):
         if self.current_menu_id != menu_id:
             return
             
-        self.results = genres
-        self.progress_map = {}
-        
+        self.results = results
+        self.progress_map = progress_map or {}
+        self.current_page = page
+        self.prepare_media_table()
+        self.update_table_rows()
+
+    def update_genres_table_rows(self) -> None:
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
         table.add_columns("Nazwa gatunku", "Typ")
         
-        itype = "Filmy" if menu_id == "menu-movie-genres" else "Seriale"
-        for i, genre in enumerate(genres):
+        for i, genre in enumerate(self.results):
+            media_type = genre.get('media_type', 'movie')
+            if self.media_filter == "movie" and media_type != "movie":
+                continue
+            if self.media_filter == "show" and media_type != "show":
+                continue
+                
+            itype = "Filmy" if media_type == "movie" else "Seriale"
             table.add_row(
                 genre.get('name', 'Nieznany'),
                 itype,
@@ -388,51 +400,52 @@ class HomeScreen(BaseScreen):
             
         inp = self.query_one("#search-input", Input)
         inp.disabled = False
-        if len(genres) > 0:
+        if table.row_count > 0:
             table.focus()
+
+    def show_genres(self, genres, menu_id):
+        if self.current_menu_id != menu_id:
+            return
+            
+        self.results = genres
+        self.progress_map = {}
+        self.update_genres_table_rows()
 
     def show_genre_results(self, results, menu_id, genre_name, page=1):
         if self.current_menu_id != menu_id:
             return
             
-        # Prepends a back option (None) to results
         self.results = [None] + list(results)
         self.progress_map = {}
         self.current_page = page
         
-        table = self.query_one("#results-table", DataTable)
-        table.clear(columns=True)
-        table.add_columns("Tytuł", "Rok", "Typ")
-        
-        # Row 0 is the back option
-        table.add_row(
-            "⬅️ Powrót do listy gatunków",
-            "—",
-            "—",
-            key="0"
-        )
-        
-        for i, item in enumerate(results):
-            itype = "Film" if item.ref.is_movie else "Serial"
-            if item.ref.is_episode:
-                itype = "Odcinek"
-            
-            title = item.title
-            if item.ref.is_episode:
-                show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
-                title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
-                
-            table.add_row(
-                title,
-                str(item.year or '????'),
-                itype,
-                key=str(i + 1)
-            )
-            
-        inp = self.query_one("#search-input", Input)
-        inp.disabled = False
-        if len(self.results) > 0:
-            table.focus()
+        self.prepare_media_table()
+        self.update_table_rows()
+
+    def action_filter_movies(self) -> None:
+        self.media_filter = "movie"
+        if self.current_menu_id == "menu-genres":
+            self.update_genres_table_rows()
+        else:
+            self.update_table_rows()
+        self.notify("Filtrowanie: Tylko filmy", severity="information")
+
+    def action_filter_shows(self) -> None:
+        self.media_filter = "show"
+        if self.current_menu_id == "menu-genres":
+            self.update_genres_table_rows()
+        else:
+            self.update_table_rows()
+        self.notify("Filtrowanie: Tylko seriale", severity="information")
+
+    def action_filter_all(self) -> None:
+        self.media_filter = "all"
+        if self.current_menu_id == "menu-genres":
+            self.update_genres_table_rows()
+        else:
+            self.update_table_rows()
+        self.notify("Filtrowanie: Wszystko", severity="information")
+
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         idx = int(event.row_key.value)
@@ -447,8 +460,7 @@ class HomeScreen(BaseScreen):
             # Check if active menu category is paginatable
             is_paginatable = (
                 self.current_menu_id in (
-                    "menu-trending", "menu-movies", "menu-shows",
-                    "menu-top-rated-movies", "menu-top-rated-shows",
+                    "menu-trending", "menu-popular", "menu-top-rated",
                     "menu-search"
                 ) or self.current_menu_id.startswith("genre-")
             )
@@ -474,14 +486,26 @@ class HomeScreen(BaseScreen):
                     results.extend(movies[len(shows):])
                 elif len(shows) > len(movies):
                     results.extend(shows[len(movies):])
-            elif menu_id == "menu-movies":
-                results = list(tmdb.trending('movie', 'week', page=page))[:30]
-            elif menu_id == "menu-shows":
-                results = list(tmdb.trending('show', 'week', page=page))[:30]
-            elif menu_id == "menu-top-rated-movies":
-                results = list(tmdb.discover_list('movie', 'top_rated', page=page))[:30]
-            elif menu_id == "menu-top-rated-shows":
-                results = list(tmdb.discover_list('show', 'top_rated', page=page))[:30]
+            elif menu_id == "menu-popular":
+                movies = list(tmdb.discover_list('movie', 'popular', page=page))[:15]
+                shows = list(tmdb.discover_list('show', 'popular', page=page))[:15]
+                for m, s in zip(movies, shows):
+                    results.append(m)
+                    results.append(s)
+                if len(movies) > len(shows):
+                    results.extend(movies[len(shows):])
+                elif len(shows) > len(movies):
+                    results.extend(shows[len(movies):])
+            elif menu_id == "menu-top-rated":
+                movies = list(tmdb.discover_list('movie', 'top_rated', page=page))[:15]
+                shows = list(tmdb.discover_list('show', 'top_rated', page=page))[:15]
+                for m, s in zip(movies, shows):
+                    results.append(m)
+                    results.append(s)
+                if len(movies) > len(shows):
+                    results.extend(movies[len(shows):])
+                elif len(shows) > len(movies):
+                    results.extend(shows[len(movies):])
             elif menu_id.startswith("genre-"):
                 parts = menu_id.split("-")[1].split(":")
                 media_type = parts[0]
@@ -515,7 +539,13 @@ class HomeScreen(BaseScreen):
         
         for i, item in enumerate(results):
             idx = start_idx + i
-            itype = "Film" if item.ref.is_movie else "Serial"
+            is_movie = item.ref.is_movie
+            if self.media_filter == "movie" and not is_movie:
+                continue
+            if self.media_filter == "show" and is_movie:
+                continue
+                
+            itype = "Film" if is_movie else "Serial"
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
@@ -537,11 +567,11 @@ class HomeScreen(BaseScreen):
         idx = int(event.row_key.value)
         
         # 1. If in genre list mode
-        if self.current_menu_id in ("menu-movie-genres", "menu-show-genres"):
+        if self.current_menu_id == "menu-genres":
             genre = self.results[idx]
             genre_id = genre['id']
             genre_name = genre['name']
-            media_type = 'movie' if self.current_menu_id == "menu-movie-genres" else 'show'
+            media_type = genre.get('media_type', 'movie')
             
             self.current_menu_id = f"genre-{media_type}:{genre_id}"
             
@@ -558,8 +588,7 @@ class HomeScreen(BaseScreen):
             
         # 2. If in genre results mode and index is 0 (back option)
         if self.current_menu_id.startswith("genre-") and idx == 0:
-            media_type = 'movie' if 'movie' in self.current_menu_id else 'show'
-            self.current_menu_id = f"menu-{media_type}-genres"
+            self.current_menu_id = "menu-genres"
             
             # Reset page states for genre list
             self.current_page = 1
@@ -569,10 +598,7 @@ class HomeScreen(BaseScreen):
             table = self.query_one("#results-table", DataTable)
             table.clear()
             
-            if media_type == 'movie':
-                self.load_movie_genres()
-            else:
-                self.load_show_genres()
+            self.load_genres()
             return
             
         # 3. Normal item selection
