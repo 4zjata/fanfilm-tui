@@ -44,7 +44,7 @@ class HomeScreen(BaseScreen):
     #sidebar-list > .option-list--option-highlighted {
         background: $accent;
         color: $text;
-        text-style: bold;
+        text-style: none;
     }
     """
 
@@ -65,23 +65,23 @@ class HomeScreen(BaseScreen):
         with Horizontal():
             with Vertical(id="home-sidebar"):
                 yield OptionList(
-                    Option("🏠 Start", id="menu-trending"),
+                    Option("🏠\uFE0F Start", id="menu-trending"),
                     None,
-                    Option("🍿 Popularne Filmy", id="menu-movies"),
+                    Option("🍿\uFE0F Popularne Filmy", id="menu-movies"),
                     None,
-                    Option("⭐ Najlepsze Filmy", id="menu-top-rated-movies"),
+                    Option("⭐\uFE0F Najlepsze Filmy", id="menu-top-rated-movies"),
                     None,
-                    Option("🎭 Gatunki Filmów", id="menu-movie-genres"),
+                    Option("🎭\uFE0F Gatunki Filmów", id="menu-movie-genres"),
                     None,
-                    Option("📺 Popularne Seriale", id="menu-shows"),
+                    Option("📺\uFE0F Popularne Seriale", id="menu-shows"),
                     None,
-                    Option("⭐ Najlepsze Seriale", id="menu-top-rated-shows"),
+                    Option("⭐\uFE0F Najlepsze Seriale", id="menu-top-rated-shows"),
                     None,
-                    Option("🎭 Gatunki Seriali", id="menu-show-genres"),
+                    Option("🎭\uFE0F Gatunki Seriali", id="menu-show-genres"),
                     None,
-                    Option("⏳ W toku", id="menu-progress"),
+                    Option("⏳\uFE0F W toku", id="menu-progress"),
                     None,
-                    Option("🔍 Szukaj", id="menu-search"),
+                    Option("🔍\uFE0F Szukaj", id="menu-search"),
                     id="sidebar-list"
                 )
             with Vertical(id="home-main"):
