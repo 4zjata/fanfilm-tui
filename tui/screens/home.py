@@ -90,7 +90,7 @@ class HomeScreen(BaseScreen):
 
     def on_mount(self) -> None:
         table = self.query_one("#results-table", DataTable)
-        table.add_columns("Tytuł", "Rok", "Typ", "Status / Postęp")
+        table.add_columns("Tytuł", "Rok", "Typ")
         
         inp = self.query_one("#search-input", Input)
         inp.display = False
@@ -328,7 +328,7 @@ class HomeScreen(BaseScreen):
     def prepare_media_table(self):
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Tytuł", "Rok", "Typ", "Status / Postęp")
+        table.add_columns("Tytuł", "Rok", "Typ")
 
     def show_results(self, results, menu_id, progress_map=None, page=1):
         if self.current_menu_id != menu_id:
@@ -345,22 +345,20 @@ class HomeScreen(BaseScreen):
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
-            if menu_id == "menu-progress":
-                status = self.progress_map.get(str(i), "0%")
-            else:
-                status = "Popularne" if "menu-" in menu_id else "Wynik"
-                
             # Formatting title: if episode, show show title and SxxExx
             title = item.title
             if item.ref.is_episode:
                 show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
                 title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
                 
+            if menu_id == "menu-progress":
+                pct = self.progress_map.get(str(i), "0%")
+                title = f"{title} ({pct})"
+                
             table.add_row(
                 title, 
                 str(item.year or '????'), 
                 itype, 
-                status,
                 key=str(i)
             )
             
@@ -404,12 +402,11 @@ class HomeScreen(BaseScreen):
         
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Tytuł", "Rok", "Typ", f"Kategoria: {genre_name}")
+        table.add_columns("Tytuł", "Rok", "Typ")
         
         # Row 0 is the back option
         table.add_row(
             "⬅️ Powrót do listy gatunków",
-            "—",
             "—",
             "—",
             key="0"
@@ -429,7 +426,6 @@ class HomeScreen(BaseScreen):
                 title,
                 str(item.year or '????'),
                 itype,
-                "Wynik",
                 key=str(i + 1)
             )
             
@@ -523,12 +519,6 @@ class HomeScreen(BaseScreen):
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
-            status = "Wynik"
-            if menu_id.startswith("genre-"):
-                status = "Wynik"
-            elif "menu-" in menu_id:
-                status = "Popularne" if "trending" in menu_id or "movies" in menu_id or "shows" in menu_id else "Wynik"
-                
             title = item.title
             if item.ref.is_episode:
                 show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
@@ -538,7 +528,6 @@ class HomeScreen(BaseScreen):
                 title, 
                 str(item.year or '????'), 
                 itype, 
-                status,
                 key=str(idx)
             )
             
