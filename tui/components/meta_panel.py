@@ -8,6 +8,21 @@ from lib.ff.settings import settings
 
 class MetaPanel(Vertical):
     def update_meta(self, item):
+        # Clear the old poster immediately on the main thread
+        container = self.query_one("#poster-container")
+        for child in container.children:
+            child.remove()
+
+        if item is None:
+            self.query_one("#details", Static).update("Wybierz pozycję z listy...")
+            return
+
+        if isinstance(item, dict):
+            name = item.get('name', 'Gatunek')
+            details = f"[bold cyan]Gatunek:[/bold cyan] {name}\n\n[dim]Wybierz ten gatunek, aby wyświetlić powiązane pozycje.[/dim]"
+            self.query_one("#details", Static).update(details)
+            return
+
         vtag = item.getVideoInfoTag()
         title = item.title
         year = item.year or vtag.getYear() or "????"
@@ -22,14 +37,10 @@ class MetaPanel(Vertical):
         
         self.query_one("#details", Static).update(details)
         
-        # Clear the old poster immediately on the main thread
-        container = self.query_one("#poster-container")
-        for child in container.children:
-            child.remove()
-            
         url = item.getArt("poster")
         if url:
             self.load_poster(url)
+
 
     @work(thread=True, exclusive=True)
     def load_poster(self, url: str) -> None:
