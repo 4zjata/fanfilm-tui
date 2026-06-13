@@ -3,7 +3,7 @@ from textual.app import App
 from textual.command import Provider, Hit, DiscoveryHit
 
 from lib.ff.settings import settings
-from tui.screens.search import SearchScreen
+from tui.screens.home import HomeScreen
 
 class FanFilmCommands(Provider):
     async def discover(self):
@@ -164,14 +164,14 @@ class FanFilmApp(App):
             theme_val = "textual-dark"
         self.theme = theme_val
         
-        self.push_screen(SearchScreen())
+        self.push_screen(HomeScreen())
 
     def on_unmount(self):
         if hasattr(self, 'cf_server') and self.cf_server:
             self.cf_server.stop()
 
     def action_goto_search(self):
-        self.push_screen(SearchScreen())
+        self.push_screen(HomeScreen(start_search=True))
 
     def action_goto_settings(self):
         # We will implement this screen next

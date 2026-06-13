@@ -1,0 +1,271 @@
+import sys
+from textual import work
+from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
+from textual.widgets import Input, DataTable, OptionList
+from textual.widgets.option_list import Option
+
+from tui.screens.base import BaseScreen
+from tui.helpers import rate_source
+
+class HomeScreen(BaseScreen):
+    BINDINGS = [
+        ("escape", "app.pop_screen", "Powrót"),
+        ("m", "focus_menu", "Menu"),
+        ("t", "focus_table", "Tabela"),
+    ]
+
+    DEFAULT_CSS = """
+    HomeScreen #left-pane > Horizontal {
+        height: 1fr;
+    }
+    #home-sidebar {
+        width: 20%;
+        min-width: 18;
+        max-width: 25;
+        border-right: thin $primary;
+        height: 100%;
+        padding: 0 1 0 0;
+    }
+    #home-main {
+        width: 80%;
+        height: 100%;
+        padding: 0 0 0 1;
+    }
+    #search-input {
+        margin-bottom: 1;
+    }
+    #sidebar-list {
+        height: 100%;
+        background: transparent;
+        border: none;
+    }
+    """
+
+    def __init__(self, start_search=False):
+        super().__init__()
+        self.current_menu_id = "menu-trending"
+        self.results = []
+        self.progress_map = {}
+        self.start_search = start_search
+
+    def compose_left(self) -> ComposeResult:
+        with Horizontal():
+            with Vertical(id="home-sidebar"):
+                yield OptionList(
+                    Option("🏠 Start", id="menu-trending"),
+                    Option("🍿 Filmy", id="menu-movies"),
+                    Option("📺 Seriale", id="menu-shows"),
+                    Option("⏳ W toku", id="menu-progress"),
+                    Option("🔍 Szukaj", id="menu-search"),
+                    id="sidebar-list"
+                )
+            with Vertical(id="home-main"):
+                yield Input(placeholder="Wpisz szukaną frazę i naciśnij Enter...", id="search-input")
+                yield DataTable(id="results-table", cursor_type="row")
+
+    def on_mount(self) -> None:
+        table = self.query_one("#results-table", DataTable)
+        table.add_columns("Tytuł", "Rok", "Typ", "Status / Postęp")
+        
+        inp = self.query_one("#search-input", Input)
+        inp.display = False
+        
+        # Select initial option
+        option_list = self.query_one("#sidebar-list", OptionList)
+        if self.start_search:
+            option_list.highlighted_index = 4  # Option index for Szukaj
+            self.current_menu_id = "menu-search"
+            inp.display = True
+            inp.focus()
+        else:
+            option_list.highlighted_index = 0
+            self.current_menu_id = "menu-trending"
+            self.load_trending()
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        opt_id = event.option.id
+        self.current_menu_id = opt_id
+        
+        table = self.query_one("#results-table", DataTable)
+        table.clear()
+        self.results = []
+        self.progress_map = {}
+        
+        inp = self.query_one("#search-input", Input)
+        
+        if opt_id == "menu-search":
+            inp.display = True
+            inp.disabled = False
+            inp.value = ""
+            inp.focus()
+        else:
+            inp.display = False
+            if opt_id == "menu-trending":
+                self.load_trending()
+            elif opt_id == "menu-movies":
+                self.load_movies()
+            elif opt_id == "menu-shows":
+                self.load_shows()
+            elif opt_id == "menu-progress":
+                self.load_progress()
+
+    @work(thread=True)
+    def load_trending(self):
+        try:
+            from lib.ff.tmdb import tmdb
+            movies = list(tmdb.trending('movie', 'week', page=1))[:15]
+            shows = list(tmdb.trending('show', 'week', page=1))[:15]
+            results = []
+            for m, s in zip(movies, shows):
+                results.append(m)
+                results.append(s)
+            if len(movies) > len(shows):
+                results.extend(movies[len(shows):])
+            elif len(shows) > len(movies):
+                results.extend(shows[len(movies):])
+            
+            self.app.call_from_thread(self.show_results, results, "menu-trending")
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.load_failed, str(e), "menu-trending")
+
+    @work(thread=True)
+    def load_movies(self):
+        try:
+            from lib.ff.tmdb import tmdb
+            results = list(tmdb.trending('movie', 'week', page=1))[:30]
+            self.app.call_from_thread(self.show_results, results, "menu-movies")
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.load_failed, str(e), "menu-movies")
+
+    @work(thread=True)
+    def load_shows(self):
+        try:
+            from lib.ff.tmdb import tmdb
+            results = list(tmdb.trending('show', 'week', page=1))[:30]
+            self.app.call_from_thread(self.show_results, results, "menu-shows")
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.load_failed, str(e), "menu-shows")
+
+    @work(thread=True)
+    def load_progress(self):
+        try:
+            from lib.ff.kodidb import video_db
+            from lib.ff.info import ffinfo
+            
+            plays = video_db.get_plays()
+            in_progress = [play for play in plays if play.has_progress]
+            in_progress.sort(key=lambda x: x.played_at or 0, reverse=True)
+            
+            results = []
+            progress_map = {}
+            for play in in_progress:
+                try:
+                    item = ffinfo.get_item(play.ref)
+                    if item:
+                        percent = int(play.percent) if play.percent is not None else 0
+                        results.append(item)
+                        progress_map[str(len(results) - 1)] = f"{percent}%"
+                except Exception:
+                    pass
+                    
+            self.app.call_from_thread(self.show_results, results, "menu-progress", progress_map)
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.load_failed, str(e), "menu-progress")
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        query = event.value
+        if not query: return
+        self.query_one("#results-table", DataTable).clear()
+        self.query_one("#search-input", Input).disabled = True
+        self.run_search(query)
+
+    @work(thread=True)
+    def run_search(self, query):
+        try:
+            from lib.ff.tmdb import tmdb
+            results = tmdb.search('multi', query)
+            self.app.call_from_thread(self.show_results, results, "menu-search")
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            self.app.call_from_thread(self.load_failed, str(e), "menu-search")
+
+    def load_failed(self, error_msg, menu_id):
+        if self.current_menu_id != menu_id:
+            return
+        inp = self.query_one("#search-input", Input)
+        inp.disabled = False
+        if menu_id == "menu-search":
+            inp.focus()
+        self.notify(f"Błąd ładowania danych: {error_msg}", severity="error")
+
+    def show_results(self, results, menu_id, progress_map=None):
+        if self.current_menu_id != menu_id:
+            return
+            
+        self.results = results
+        self.progress_map = progress_map or {}
+        table = self.query_one("#results-table", DataTable)
+        table.clear()
+        
+        for i, item in enumerate(results):
+            itype = "Film" if item.ref.is_movie else "Serial"
+            if item.ref.is_episode:
+                itype = "Odcinek"
+                
+            if menu_id == "menu-progress":
+                status = self.progress_map.get(str(i), "0%")
+            else:
+                status = "Popularne" if "menu-" in menu_id else "Wynik"
+                
+            # Formatting title: if episode, show show title and SxxExx
+            title = item.title
+            if item.ref.is_episode:
+                show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
+                title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
+                
+            table.add_row(
+                title, 
+                str(item.year or '????'), 
+                itype, 
+                status,
+                key=str(i)
+            )
+            
+        inp = self.query_one("#search-input", Input)
+        inp.disabled = False
+        if menu_id != "menu-search" and len(results) > 0:
+            table.focus()
+
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        idx = int(event.row_key.value)
+        if idx >= len(self.results): return
+        item = self.results[idx]
+        if hasattr(self, "_meta_timer") and self._meta_timer:
+            self._meta_timer.stop()
+        self._meta_timer = self.set_timer(0.25, lambda: self.query_one("#meta-panel").update_meta(item))
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        idx = int(event.row_key.value)
+        item = self.results[idx]
+        if item.ref.is_movie or item.ref.is_episode:
+            from tui.screens.scraping import ScrapingScreen
+            self.app.push_screen(ScrapingScreen(item))
+        else:
+            from tui.screens.season import SeasonScreen
+            self.app.push_screen(SeasonScreen(item))
+
+    def action_focus_menu(self) -> None:
+        self.query_one("#sidebar-list", OptionList).focus()
+
+    def action_focus_table(self) -> None:
+        self.query_one("#results-table", DataTable).focus()
