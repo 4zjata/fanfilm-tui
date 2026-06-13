@@ -23,7 +23,7 @@ class HomeScreen(BaseScreen):
         width: 20%;
         min-width: 18;
         max-width: 25;
-        border-right: thin $primary;
+        border-right: solid $primary;
         height: 100%;
         padding: 0 1 0 0;
     }
