@@ -40,6 +40,16 @@ class HomeScreen(BaseScreen):
         background: transparent;
         border: none;
     }
+    #sidebar-list > .option-list--option {
+        padding: 0 1;
+        margin: 0 1 1 1;
+        border: solid $primary-darken-2;
+    }
+    #sidebar-list > .option-list--option-highlighted {
+        background: $primary-darken-1;
+        border: solid $accent;
+        text-style: bold;
+    }
     """
 
     def __init__(self, start_search=False):
@@ -137,8 +147,11 @@ class HomeScreen(BaseScreen):
     def load_trending(self):
         try:
             from lib.ff.tmdb import tmdb
-            movies = list(tmdb.trending('movie', 'week', page=1))[:15]
-            shows = list(tmdb.trending('show', 'week', page=1))[:15]
+            movies = []
+            shows = []
+            for p in (1, 2):
+                movies.extend(list(tmdb.trending('movie', 'week', page=p))[:15])
+                shows.extend(list(tmdb.trending('show', 'week', page=p))[:15])
             results = []
             for m, s in zip(movies, shows):
                 results.append(m)
@@ -148,7 +161,7 @@ class HomeScreen(BaseScreen):
             elif len(shows) > len(movies):
                 results.extend(shows[len(movies):])
             
-            self.app.call_from_thread(self.show_results, results, "menu-trending")
+            self.app.call_from_thread(self.show_results, results, "menu-trending", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -158,8 +171,10 @@ class HomeScreen(BaseScreen):
     def load_movies(self):
         try:
             from lib.ff.tmdb import tmdb
-            results = list(tmdb.trending('movie', 'week', page=1))[:30]
-            self.app.call_from_thread(self.show_results, results, "menu-movies")
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.trending('movie', 'week', page=p)))
+            self.app.call_from_thread(self.show_results, results, "menu-movies", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -169,8 +184,10 @@ class HomeScreen(BaseScreen):
     def load_shows(self):
         try:
             from lib.ff.tmdb import tmdb
-            results = list(tmdb.trending('show', 'week', page=1))[:30]
-            self.app.call_from_thread(self.show_results, results, "menu-shows")
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.trending('show', 'week', page=p)))
+            self.app.call_from_thread(self.show_results, results, "menu-shows", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -180,8 +197,10 @@ class HomeScreen(BaseScreen):
     def load_top_rated_movies(self):
         try:
             from lib.ff.tmdb import tmdb
-            results = list(tmdb.discover_list('movie', 'top_rated', page=1))[:30]
-            self.app.call_from_thread(self.show_results, results, "menu-top-rated-movies")
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.discover_list('movie', 'top_rated', page=p)))
+            self.app.call_from_thread(self.show_results, results, "menu-top-rated-movies", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -191,8 +210,10 @@ class HomeScreen(BaseScreen):
     def load_top_rated_shows(self):
         try:
             from lib.ff.tmdb import tmdb
-            results = list(tmdb.discover_list('show', 'top_rated', page=1))[:30]
-            self.app.call_from_thread(self.show_results, results, "menu-top-rated-shows")
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.discover_list('show', 'top_rated', page=p)))
+            self.app.call_from_thread(self.show_results, results, "menu-top-rated-shows", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -224,9 +245,11 @@ class HomeScreen(BaseScreen):
     def load_genre_results(self, media_type, genre_id, genre_name):
         try:
             from lib.ff.tmdb import tmdb
-            results = list(tmdb.discover(media_type, with_genres=str(genre_id), page=1))[:30]
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.discover(media_type, with_genres=str(genre_id), page=p)))
             menu_id = f"genre-{media_type}:{genre_id}"
-            self.app.call_from_thread(self.show_genre_results, results, menu_id, genre_name)
+            self.app.call_from_thread(self.show_genre_results, results, menu_id, genre_name, page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -279,8 +302,10 @@ class HomeScreen(BaseScreen):
     def run_search(self, query):
         try:
             from lib.ff.tmdb import tmdb
-            results = tmdb.search('multi', query)
-            self.app.call_from_thread(self.show_results, results, "menu-search")
+            results = []
+            for p in (1, 2):
+                results.extend(list(tmdb.search('multi', query, page=p)))
+            self.app.call_from_thread(self.show_results, results, "menu-search", page=2)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -301,12 +326,13 @@ class HomeScreen(BaseScreen):
         table.clear(columns=True)
         table.add_columns("Tytuł", "Rok", "Typ", "Status / Postęp")
 
-    def show_results(self, results, menu_id, progress_map=None):
+    def show_results(self, results, menu_id, progress_map=None, page=1):
         if self.current_menu_id != menu_id:
             return
             
         self.results = results
         self.progress_map = progress_map or {}
+        self.current_page = page
         self.prepare_media_table()
         table = self.query_one("#results-table", DataTable)
         
@@ -363,13 +389,14 @@ class HomeScreen(BaseScreen):
         if len(genres) > 0:
             table.focus()
 
-    def show_genre_results(self, results, menu_id, genre_name):
+    def show_genre_results(self, results, menu_id, genre_name, page=1):
         if self.current_menu_id != menu_id:
             return
             
         # Prepends a back option (None) to results
         self.results = [None] + list(results)
         self.progress_map = {}
+        self.current_page = page
         
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
