@@ -20,15 +20,13 @@ class HomeScreen(BaseScreen):
         height: 1fr;
     }
     #home-sidebar {
-        width: 20%;
-        min-width: 18;
-        max-width: 25;
+        width: 28;
         border-right: solid $primary;
         height: 100%;
         padding: 0 1 0 0;
     }
     #home-main {
-        width: 80%;
+        width: 1fr;
         height: 100%;
         padding: 0 0 0 1;
     }
@@ -40,14 +38,12 @@ class HomeScreen(BaseScreen):
         background: transparent;
         border: none;
     }
-    #sidebar-list > .option-list--option {
-        padding: 0 1;
-        margin: 0 1 1 1;
-        border: solid $primary-darken-2;
+    #sidebar-list > .option-list--separator {
+        color: $primary-darken-2;
     }
     #sidebar-list > .option-list--option-highlighted {
-        background: $primary-darken-1;
-        border: solid $accent;
+        background: $accent;
+        color: $text;
         text-style: bold;
     }
     """
@@ -70,13 +66,21 @@ class HomeScreen(BaseScreen):
             with Vertical(id="home-sidebar"):
                 yield OptionList(
                     Option("🏠 Start", id="menu-trending"),
+                    None,
                     Option("🍿 Popularne Filmy", id="menu-movies"),
+                    None,
                     Option("⭐ Najlepsze Filmy", id="menu-top-rated-movies"),
+                    None,
                     Option("🎭 Gatunki Filmów", id="menu-movie-genres"),
+                    None,
                     Option("📺 Popularne Seriale", id="menu-shows"),
+                    None,
                     Option("⭐ Najlepsze Seriale", id="menu-top-rated-shows"),
+                    None,
                     Option("🎭 Gatunki Seriali", id="menu-show-genres"),
+                    None,
                     Option("⏳ W toku", id="menu-progress"),
+                    None,
                     Option("🔍 Szukaj", id="menu-search"),
                     id="sidebar-list"
                 )
@@ -94,7 +98,7 @@ class HomeScreen(BaseScreen):
         # Select initial option
         option_list = self.query_one("#sidebar-list", OptionList)
         if self.start_search:
-            option_list.highlighted_index = 8  # Option index for Szukaj
+            option_list.highlighted_index = 16  # Option index for Szukaj
             self.current_menu_id = "menu-search"
             inp.display = True
             inp.focus()
