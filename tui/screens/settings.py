@@ -65,6 +65,18 @@ class SettingsScreen(Screen):
 
                     yield Label("Discord Client ID (Opcjonalny):")
                     yield Input(placeholder="Wpisz własny Client ID...", id="rpc-client-id")
+
+                    yield Label("Discord RPC - Pokazuj aktywność w menu:")
+                    yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-menu-select", allow_blank=False)
+
+                    yield Label("Discord RPC - Pokazuj szukanie źródeł:")
+                    yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-scraping-select", allow_blank=False)
+
+                    yield Label("Discord RPC - Pokazuj szczegóły oglądania:")
+                    yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-watching-select", allow_blank=False)
+
+                    yield Label("Discord RPC - Pokazuj pozostały czas:")
+                    yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-time-select", allow_blank=False)
                     
                 with Vertical(id="pane-paths"):
                     yield Label("Katalog pobierania filmów:")
@@ -158,6 +170,18 @@ class SettingsScreen(Screen):
 
         discord_client_id = settings.getString("tui.discord_client_id")
         if not discord_client_id: discord_client_id = "1253130635292430336"
+
+        rpc_menu = settings.getString("tui.discord_show_menu")
+        if not rpc_menu: rpc_menu = "true"
+
+        rpc_scraping = settings.getString("tui.discord_show_scraping")
+        if not rpc_scraping: rpc_scraping = "true"
+
+        rpc_watching = settings.getString("tui.discord_show_watching")
+        if not rpc_watching: rpc_watching = "true"
+
+        rpc_time = settings.getString("tui.discord_show_time")
+        if not rpc_time: rpc_time = "true"
         
         torrentio_url = settings.getString("torrentio.base_url")
         if not torrentio_url: torrentio_url = "https://torrentio.strem.fun"
@@ -194,6 +218,11 @@ class SettingsScreen(Screen):
         self.query_one("#advanced-select", Select).value = adv_val
         self.query_one("#rpc-select", Select).value = discord_rpc_enabled
         self.query_one("#rpc-client-id", Input).value = discord_client_id
+        self.query_one("#rpc-menu-select", Select).value = rpc_menu
+        self.query_one("#rpc-scraping-select", Select).value = rpc_scraping
+        self.query_one("#rpc-watching-select", Select).value = rpc_watching
+        self.query_one("#rpc-time-select", Select).value = rpc_time
+        self.query_one("#rpc-client-id", Input).value = discord_client_id
         
         self.query_one("#torrentio-url", Input).value = torrentio_url
         self.query_one("#engine-select", Select).value = engine_val
@@ -219,6 +248,10 @@ class SettingsScreen(Screen):
             adv_val = self.query_one("#advanced-select", Select).value
             rpc_enabled = self.query_one("#rpc-select", Select).value
             rpc_client_id = self.query_one("#rpc-client-id", Input).value
+            rpc_menu = self.query_one("#rpc-menu-select", Select).value
+            rpc_scraping = self.query_one("#rpc-scraping-select", Select).value
+            rpc_watching = self.query_one("#rpc-watching-select", Select).value
+            rpc_time = self.query_one("#rpc-time-select", Select).value
             
             torrentio_url = self.query_one("#torrentio-url", Input).value
             engine_val = self.query_one("#engine-select", Select).value
@@ -258,6 +291,10 @@ class SettingsScreen(Screen):
             settings.set("tui.advanced_mode", adv_val)
             settings.set("tui.discord_rpc_enabled", rpc_enabled)
             settings.set("tui.discord_client_id", rpc_client_id)
+            settings.set("tui.discord_show_menu", rpc_menu)
+            settings.set("tui.discord_show_scraping", rpc_scraping)
+            settings.set("tui.discord_show_watching", rpc_watching)
+            settings.set("tui.discord_show_time", rpc_time)
 
             if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
                 self.app.discord_rpc.update_config(rpc_enabled == "true", rpc_client_id)

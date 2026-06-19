@@ -120,6 +120,14 @@ class FanFilmApp(App):
             settings.set("tui.discord_rpc_enabled", "true")
         if not settings.getString("tui.discord_client_id"):
             settings.set("tui.discord_client_id", "1253130635292430336")
+        if not settings.getString("tui.discord_show_menu"):
+            settings.set("tui.discord_show_menu", "true")
+        if not settings.getString("tui.discord_show_scraping"):
+            settings.set("tui.discord_show_scraping", "true")
+        if not settings.getString("tui.discord_show_watching"):
+            settings.set("tui.discord_show_watching", "true")
+        if not settings.getString("tui.discord_show_time"):
+            settings.set("tui.discord_show_time", "true")
 
         # Torrentio & Streaming defaults
         if not settings.getString("torrentio.enabled"):

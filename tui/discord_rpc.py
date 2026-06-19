@@ -36,13 +36,45 @@ class DiscordRPCManager:
     def set_status(self, state, details, is_watching=False, start_time=None, end_time=None):
         if not self.enabled:
             return
+            
+        from lib.ff.settings import settings
+        
+        # Check granular permissions
+        if is_watching:
+            show_watching = settings.getString("tui.discord_show_watching") != "false"
+            show_time = settings.getString("tui.discord_show_time") != "false"
+            
+            final_state = state
+            final_details = details if show_watching else "Ogląda wideo"
+            final_start = start_time if show_time else None
+            final_end = end_time if show_time else None
+        else:
+            is_scraping = state == "Szuka źródeł"
+            if is_scraping:
+                show_scraping = settings.getString("tui.discord_show_scraping") != "false"
+                if not show_scraping:
+                    self.clear_status()
+                    return
+                final_state = state
+                final_details = details
+            else: # Menu browsing
+                show_menu = settings.getString("tui.discord_show_menu") != "false"
+                if not show_menu:
+                    self.clear_status()
+                    return
+                final_state = state
+                final_details = details
+            
+            final_start = None
+            final_end = None
+
         payload = {
             "action": "update",
-            "state": state,
-            "details": details,
+            "state": final_state,
+            "details": final_details,
             "is_watching": is_watching,
-            "start_time": start_time,
-            "end_time": end_time,
+            "start_time": final_start,
+            "end_time": final_end,
             "timestamp": time.time()
         }
         self._queue.put(payload)
