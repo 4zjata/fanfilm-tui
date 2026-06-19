@@ -193,38 +193,6 @@ def init_db():
     finally:
         conn.close()
 
-    # Migrate old JSON file if it exists
-    userdata = os.path.dirname(db_path)
-    old_json = os.path.join(userdata, 'tui_playback_progress.json')
-    if os.path.exists(old_json):
-        try:
-            import json
-            with open(old_json, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if isinstance(data, dict):
-                conn = sqlite3.connect(db_path)
-                try:
-                    cursor = conn.cursor()
-                    for ref_str, item in data.items():
-                        cursor.execute("""
-                            INSERT OR IGNORE INTO playback_progress (ref_str, seconds, percent, title, year, type, updated_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            ref_str,
-                            float(item.get("seconds", 0)),
-                            float(item.get("percent", 0)),
-                            item.get("title", ""),
-                            int(item["year"]) if item.get("year") is not None else None,
-                            item.get("type", "movie"),
-                            float(item.get("updated_at", time.time()))
-                        ))
-                    conn.commit()
-                finally:
-                    conn.close()
-            os.unlink(old_json)
-        except Exception:
-            pass
-
 def load_local_progress():
     import sqlite3
     init_db()
