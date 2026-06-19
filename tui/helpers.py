@@ -2,6 +2,9 @@ import sys
 import textwrap
 import urllib.request
 from PIL import Image
+import os
+import json
+import time
 
 from lib.ff.settings import settings
 
@@ -119,7 +122,7 @@ def rate_source(source) -> int:
             
     return score
 
-def play_in_mpv(resolved_url, title=""):
+def play_in_mpv(resolved_url, title="", start_time=0):
     try:
         from urllib.parse import parse_qsl
         if not isinstance(resolved_url, str):
@@ -135,6 +138,9 @@ def play_in_mpv(resolved_url, title=""):
             url = url[4:]
         
         cmd = ["mpv"]
+        if start_time > 10:
+            cmd.append(f"--start={int(start_time)}")
+
         for k, v in headers.items():
             if k.lower() == 'user-agent':
                 cmd.append(f"--user-agent={v}")
@@ -155,3 +161,52 @@ def play_in_mpv(resolved_url, title=""):
     except Exception as e:
         print(f"Error preparing mpv command: {e}", file=sys.stderr)
         return None
+
+def get_progress_file():
+    from xbmcvfs import translatePath
+    userdata = translatePath('special://userdata')
+    profile_dir = os.path.join(userdata, 'addon_data', 'plugin.video.fanfilm')
+    try:
+        os.makedirs(profile_dir, exist_ok=True)
+    except:
+        pass
+    return os.path.join(profile_dir, 'tui_playback_progress.json')
+
+def load_local_progress():
+    path = get_progress_file()
+    if os.path.exists(path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_local_progress(ref_str, seconds, percent, title, year, itype, extra_data=None):
+    progress = load_local_progress()
+    try:
+        percent = float(percent)
+        seconds = float(seconds)
+    except (ValueError, TypeError):
+        return
+
+    if percent >= 92.0:
+        if ref_str in progress:
+            del progress[ref_str]
+    else:
+        progress[ref_str] = {
+            "seconds": seconds,
+            "percent": percent,
+            "title": title,
+            "year": year,
+            "type": itype,
+            "updated_at": time.time(),
+            "extra": extra_data or {}
+        }
+        
+    path = get_progress_file()
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(progress, f, indent=4, ensure_ascii=False)
+    except Exception:
+        pass

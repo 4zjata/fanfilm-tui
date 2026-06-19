@@ -219,7 +219,15 @@ class StreamScreen(Screen):
                     title = f"{ffitem.vtag.getTvShowTitle() or ffitem.title} - S{ffitem.season:02d}E{ffitem.episode:02d}"
                 else:
                     title = f"{ffitem.title} ({ffitem.year})"
-                cmd = play_in_mpv(resolved, title)
+                
+                from tui.helpers import load_local_progress, save_local_progress
+                progress_data = load_local_progress()
+                ref_str = str(ffitem.ref)
+                start_time = 0
+                if ref_str in progress_data:
+                    start_time = progress_data[ref_str].get("seconds", 0)
+                
+                cmd = play_in_mpv(resolved, title, start_time=start_time)
                 if cmd:
                     def run_mpv():
                         import subprocess
@@ -237,7 +245,7 @@ class StreamScreen(Screen):
                         run_cmd = list(cmd)
                         run_cmd.append(f"--input-ipc-server={socket_path}")
 
-                        playback_state = {"percent": 0.0}
+                        playback_state = {"percent": 0.0, "time": 0.0, "duration": 0.0}
 
                         def monitor():
                             time.sleep(2)
@@ -249,18 +257,32 @@ class StreamScreen(Screen):
                                     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
                                         s.settimeout(1.0)
                                         s.connect(socket_path)
-                                        req = {"command": ["get_property", "percent-pos"]}
-                                        s.sendall(json.dumps(req).encode('utf-8') + b'\n')
-                                        res = s.recv(4096)
                                         
+                                        # Get current position
+                                        s.sendall(json.dumps({"command": ["get_property", "time-pos"]}).encode('utf-8') + b'\n')
+                                        res = s.recv(4096)
                                         for line in res.decode('utf-8').split('\n'):
                                             if line.strip():
-                                                data = json.loads(line)
-                                                if "data" in data and isinstance(data["data"], (int, float)):
-                                                    playback_state["percent"] = float(data["data"])
-                                                elif "error" in data and data["error"] == "property unavailable":
-                                                    # Some formats/states can have percent-pos unavailable temporarily
-                                                    pass
+                                                try:
+                                                    data = json.loads(line)
+                                                    if "data" in data and isinstance(data["data"], (int, float)):
+                                                        playback_state["time"] = float(data["data"])
+                                                except: pass
+
+                                        # Get total duration
+                                        s.sendall(json.dumps({"command": ["get_property", "duration"]}).encode('utf-8') + b'\n')
+                                        res = s.recv(4096)
+                                        for line in res.decode('utf-8').split('\n'):
+                                            if line.strip():
+                                                try:
+                                                    data = json.loads(line)
+                                                    if "data" in data and isinstance(data["data"], (int, float)):
+                                                        playback_state["duration"] = float(data["data"])
+                                                except: pass
+
+                                        # Calculate percent
+                                        if playback_state["time"] > 0 and playback_state["duration"] > 0:
+                                            playback_state["percent"] = (playback_state["time"] / playback_state["duration"]) * 100.0
                                 except Exception:
                                     pass
                                 time.sleep(2)
@@ -278,7 +300,21 @@ class StreamScreen(Screen):
                                 except: pass
 
                         percent_watched = playback_state["percent"]
-                        self.app.log(f"MPV finished playback. Last watched percent: {percent_watched}%")
+                        seconds_watched = playback_state["time"]
+                        self.app.log(f"MPV finished playback. Last watched percent: {percent_watched}%, seconds: {seconds_watched}")
+
+                        # Save local progress
+                        if seconds_watched > 10:
+                            ref_str = str(ffitem.ref)
+                            itype = "movie" if ffitem.ref.is_movie else ("episode" if ffitem.ref.is_episode else "show")
+                            save_local_progress(
+                                ref_str=ref_str,
+                                seconds=seconds_watched,
+                                percent=percent_watched,
+                                title=ffitem.title,
+                                year=ffitem.year,
+                                itype=itype
+                            )
 
                         # Up Next logic
                         if ffitem.ref.is_episode and percent_watched >= 75.0:

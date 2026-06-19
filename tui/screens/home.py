@@ -252,22 +252,50 @@ class HomeScreen(BaseScreen):
         try:
             from lib.ff.kodidb import video_db
             from lib.ff.info import ffinfo
+            from tui.helpers import load_local_progress
             
             plays = video_db.get_plays()
-            in_progress = [play for play in plays if play.has_progress]
-            in_progress.sort(key=lambda x: x.played_at or 0, reverse=True)
+            in_progress_db = [play for play in plays if play.has_progress]
             
-            results = []
-            progress_map = {}
-            for play in in_progress:
+            local_progress = load_local_progress()
+            
+            combined = {}
+            
+            # Add Kodi DB entries
+            for play in in_progress_db:
                 try:
+                    ref_str = str(play.ref)
                     item = ffinfo.get_item(play.ref)
                     if item:
                         percent = int(play.percent) if play.percent is not None else 0
-                        results.append(item)
-                        progress_map[str(len(results) - 1)] = f"{percent}%"
+                        ts = play.played_at or 0
+                        combined[ref_str] = (item, percent, ts)
                 except Exception:
                     pass
+            
+            # Add/overwrite with local TUI entries
+            for ref_str, data in local_progress.items():
+                try:
+                    from lib.defs import MediaRef
+                    ref = MediaRef.from_slash_string(ref_str)
+                    if ref:
+                        item = ffinfo.get_item(ref)
+                        if item:
+                            percent = int(data["percent"])
+                            ts = data.get("updated_at", 0)
+                            if ref_str not in combined or ts > combined[ref_str][2]:
+                                combined[ref_str] = (item, percent, ts)
+                except Exception:
+                    pass
+            
+            # Sort combined entries by timestamp descending
+            sorted_entries = sorted(combined.items(), key=lambda x: x[1][2], reverse=True)
+            
+            results = []
+            progress_map = {}
+            for ref_str, (item, percent, ts) in sorted_entries:
+                results.append(item)
+                progress_map[str(len(results) - 1)] = f"{percent}%"
                     
             self.app.call_from_thread(self.show_results, results, "menu-progress", progress_map)
         except Exception as e:
