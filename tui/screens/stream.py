@@ -107,7 +107,13 @@ class StreamScreen(Screen):
                     
                     client = QBittorrentClient(url, username, password)
                     if not client.login():
-                        self.app.call_from_thread(self.notify, "Błąd: Nie można zalogować się do qBittorrent WebUI. Sprawdź konfigurację.", severity="error")
+                        if getattr(client, "last_error", None) == "IP_BANNED":
+                            msg = "Błąd: Twój adres IP został zbanowany w qBittorrent (zbyt wiele nieudanych logowań). Zrestartuj go, aby odblokować IP."
+                        elif getattr(client, "last_error", None) == "WRONG_CREDENTIALS":
+                            msg = "Błąd: Błędne hasło lub użytkownik w qBittorrent WebUI. Sprawdź Ustawienia."
+                        else:
+                            msg = "Błąd: Nie można zalogować się do qBittorrent WebUI. Sprawdź konfigurację."
+                        self.app.call_from_thread(self.notify, msg, severity="error")
                         self.app.call_from_thread(self.app.pop_screen)
                         return
                         

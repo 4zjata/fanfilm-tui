@@ -9,8 +9,10 @@ class QBittorrentClient:
         self.username = username
         self.password = password
         self.session = requests.Session()
+        self.last_error = None
         
     def login(self) -> bool:
+        self.last_error = None
         try:
             # Check if already authenticated by calling an endpoint
             resp = self.session.get(f"{self.url}/api/v2/app/webapiVersion", timeout=3)
@@ -28,7 +30,12 @@ class QBittorrentClient:
             # qBittorrent API returns 200 and 'Ok.' text on success
             if resp.status_code == 200 and "Ok" in resp.text:
                 return True
+            elif resp.status_code == 403 and "banned" in resp.text:
+                self.last_error = "IP_BANNED"
+            elif resp.status_code == 200 and "Ok" not in resp.text:
+                self.last_error = "WRONG_CREDENTIALS"
         except Exception as e:
+            self.last_error = str(e)
             print(f"[qBittorrent] Login failed: {e}")
         return False
         
