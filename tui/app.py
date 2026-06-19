@@ -152,7 +152,7 @@ class FanFilmApp(App):
 
         ENGLISH_PROVIDERS = [
             "african", "animerealms", "dahmermovies", "embed2", "filmlinks4u", 
-            "goojara", "multivid", "onlyflix", "streamimdb", "torrentio", "videasy", 
+            "goojara", "multivid", "onlyflix", "streamimdb", "torrentio", "torrentio_anime", "videasy", 
             "vidlink", "vidzee", "vixsrc", "vsembed_vidsrc", "webstreamr", "yesmovies"
         ]
         POLISH_PROVIDERS = [
