@@ -101,10 +101,14 @@ class HomeScreen(BaseScreen):
             self.current_menu_id = "menu-search"
             inp.display = True
             inp.focus()
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
         else:
             option_list.highlighted_index = 0
             self.current_menu_id = "menu-trending"
             self.load_trending()
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.set_status("Przegląda menu", "Strona główna")
 
     def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
         opt_id = event.option.id
@@ -128,18 +132,30 @@ class HomeScreen(BaseScreen):
             inp.disabled = False
             inp.value = ""
             inp.focus()
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
         else:
             inp.display = False
             if opt_id == "menu-trending":
                 self.load_trending()
+                if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                    self.app.discord_rpc.set_status("Przegląda menu", "Strona główna")
             elif opt_id == "menu-popular":
                 self.load_popular()
+                if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                    self.app.discord_rpc.set_status("Przegląda menu", "Popularne")
             elif opt_id == "menu-top-rated":
                 self.load_top_rated()
+                if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                    self.app.discord_rpc.set_status("Przegląda menu", "Najlepsze")
             elif opt_id == "menu-genres":
                 self.load_genres()
+                if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                    self.app.discord_rpc.set_status("Przegląda menu", "Gatunki")
             elif opt_id == "menu-progress":
                 self.load_progress()
+                if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                    self.app.discord_rpc.set_status("Przegląda menu", "W toku")
 
     @work(thread=True)
     def load_trending(self):
@@ -302,6 +318,8 @@ class HomeScreen(BaseScreen):
         self.query_one("#results-table", DataTable).clear()
         self.query_one("#search-input", Input).disabled = True
         self.run_search(query)
+        if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+            self.app.discord_rpc.set_status("Przegląda menu", f"Szuka: {query}")
 
     @work(thread=True)
     def run_search(self, query):
@@ -597,6 +615,8 @@ class HomeScreen(BaseScreen):
             table.clear()
             
             self.load_genre_results(media_type, genre_id, genre_name)
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.set_status("Przegląda menu", f"Gatunek: {genre_name}")
             return
             
         # 2. If in genre results mode and index is 0 (back option)
@@ -612,6 +632,8 @@ class HomeScreen(BaseScreen):
             table.clear()
             
             self.load_genres()
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.set_status("Przegląda menu", "Gatunki")
             return
             
         # 3. Normal item selection

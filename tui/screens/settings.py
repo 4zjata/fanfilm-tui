@@ -55,6 +55,16 @@ class SettingsScreen(Screen):
                         ("Włączony (Pokazuj błędy)", "true")
                     ]
                     yield Select(adv_options, id="advanced-select", allow_blank=False)
+
+                    yield Label("Włącz Discord RPC (Status aktywności):")
+                    rpc_options = [
+                        ("Włączony", "true"),
+                        ("Wyłączony", "false")
+                    ]
+                    yield Select(rpc_options, id="rpc-select", allow_blank=False)
+
+                    yield Label("Discord Client ID (Opcjonalny):")
+                    yield Input(placeholder="Wpisz własny Client ID...", id="rpc-client-id")
                     
                 with Vertical(id="pane-paths"):
                     yield Label("Katalog pobierania filmów:")
@@ -142,6 +152,12 @@ class SettingsScreen(Screen):
         
         adv_val = settings.getString("tui.advanced_mode")
         if not adv_val: adv_val = "false"
+
+        discord_rpc_enabled = settings.getString("tui.discord_rpc_enabled")
+        if not discord_rpc_enabled: discord_rpc_enabled = "true"
+
+        discord_client_id = settings.getString("tui.discord_client_id")
+        if not discord_client_id: discord_client_id = "1253130635292430336"
         
         torrentio_url = settings.getString("torrentio.base_url")
         if not torrentio_url: torrentio_url = "https://torrentio.strem.fun"
@@ -176,6 +192,8 @@ class SettingsScreen(Screen):
         self.query_one("#poster-select", Select).value = poster_val
         self.query_one("#theme-select", Select).value = theme_val
         self.query_one("#advanced-select", Select).value = adv_val
+        self.query_one("#rpc-select", Select).value = discord_rpc_enabled
+        self.query_one("#rpc-client-id", Input).value = discord_client_id
         
         self.query_one("#torrentio-url", Input).value = torrentio_url
         self.query_one("#engine-select", Select).value = engine_val
@@ -199,6 +217,8 @@ class SettingsScreen(Screen):
             poster_val = self.query_one("#poster-select", Select).value
             theme_val = self.query_one("#theme-select", Select).value
             adv_val = self.query_one("#advanced-select", Select).value
+            rpc_enabled = self.query_one("#rpc-select", Select).value
+            rpc_client_id = self.query_one("#rpc-client-id", Input).value
             
             torrentio_url = self.query_one("#torrentio-url", Input).value
             engine_val = self.query_one("#engine-select", Select).value
@@ -236,6 +256,11 @@ class SettingsScreen(Screen):
             settings.set("tui.poster.type", poster_val)
             settings.set("tui.theme", theme_val)
             settings.set("tui.advanced_mode", adv_val)
+            settings.set("tui.discord_rpc_enabled", rpc_enabled)
+            settings.set("tui.discord_client_id", rpc_client_id)
+
+            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                self.app.discord_rpc.update_config(rpc_enabled == "true", rpc_client_id)
             
             settings.set("torrentio.base_url", torrentio_url)
             settings.set("torrent.engine", engine_val)

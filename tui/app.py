@@ -116,6 +116,10 @@ class FanFilmApp(App):
             settings.set("tui.theme", "textual-dark")
         if not settings.getString("tui.poster.type"):
             settings.set("tui.poster.type", "auto")
+        if not settings.getString("tui.discord_rpc_enabled"):
+            settings.set("tui.discord_rpc_enabled", "true")
+        if not settings.getString("tui.discord_client_id"):
+            settings.set("tui.discord_client_id", "1253130635292430336")
 
         # Torrentio & Streaming defaults
         if not settings.getString("torrentio.enabled"):
@@ -201,12 +205,21 @@ class FanFilmApp(App):
         if not theme_val:
             theme_val = "textual-dark"
         self.theme = theme_val
+
+        # Discord RPC
+        from tui.discord_rpc import DiscordRPCManager
+        rpc_enabled = settings.getString("tui.discord_rpc_enabled") != "false"
+        rpc_client_id = settings.getString("tui.discord_client_id") or "1253130635292430336"
+        self.discord_rpc = DiscordRPCManager(client_id=rpc_client_id, enabled=rpc_enabled)
+        self.discord_rpc.start()
         
         self.push_screen(HomeScreen())
 
     def on_unmount(self):
         if hasattr(self, 'cf_server') and self.cf_server:
             self.cf_server.stop()
+        if hasattr(self, 'discord_rpc') and self.discord_rpc:
+            self.discord_rpc.shutdown()
 
     def action_goto_search(self):
         self.push_screen(HomeScreen(start_search=True))

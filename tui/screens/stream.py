@@ -283,9 +283,33 @@ class StreamScreen(Screen):
                                         # Calculate percent
                                         if playback_state["time"] > 0 and playback_state["duration"] > 0:
                                             playback_state["percent"] = (playback_state["time"] / playback_state["duration"]) * 100.0
+                                            
+                                            # Update Discord RPC live progress
+                                            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                                                now = time.time()
+                                                start_timestamp = now - playback_state["time"]
+                                                end_timestamp = start_timestamp + playback_state["duration"]
+                                                
+                                                title_text = f"{ffitem.title} ({ffitem.year or '????'})"
+                                                if ffitem.ref.is_episode:
+                                                    title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                                                
+                                                self.app.discord_rpc.set_status(
+                                                    state="Ogląda",
+                                                    details=title_text,
+                                                    is_watching=True,
+                                                    start_time=start_timestamp,
+                                                    end_time=end_timestamp
+                                                )
                                 except Exception:
                                     pass
                                 time.sleep(2)
+
+                        if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                            title_text = f"{ffitem.title} ({ffitem.year or '????'})"
+                            if ffitem.ref.is_episode:
+                                title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                            self.app.discord_rpc.set_status("Ogląda", title_text, is_watching=True)
 
                         monitor_thread = Thread(target=monitor, daemon=True)
                         monitor_thread.start()
@@ -298,6 +322,8 @@ class StreamScreen(Screen):
                             if os.path.exists(socket_path):
                                 try: os.unlink(socket_path)
                                 except: pass
+                            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
+                                self.app.discord_rpc.set_status("Przegląda menu", "Strona główna")
 
                         percent_watched = playback_state["percent"]
                         seconds_watched = playback_state["time"]
