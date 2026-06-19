@@ -7,7 +7,7 @@ Copyright (C) 2026 :)
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Footer, DataTable, Label, Static
+from textual.widgets import Footer, DataTable, Label, Static, Tabs, Tab
 
 from tui.screens.stream import StreamScreen
 from tui.screens.download import DownloadScreen
@@ -18,9 +18,9 @@ class SourceSelectScreen(Screen):
         ("escape", "app.pop_screen", "Powrót"),
         ("enter", "stream_source", "Streamuj (MPV)"),
         ("d", "download_source", "Pobierz"),
-        ("t", "filter_torrents", "Filtruj: Torrenty"),
-        ("w", "filter_web", "Filtruj: Webowe"),
-        ("a", "filter_all", "Pokaż Wszystko"),
+        ("t", "filter_torrents", "Zakładka: Torrenty"),
+        ("w", "filter_web", "Zakładka: Webowe"),
+        ("a", "filter_all", "Zakładka: Wszystko"),
         ("q", "cycle_quality", "Jakość"),
         ("l", "cycle_lang", "Język"),
     ]
@@ -81,7 +81,31 @@ class SourceSelectScreen(Screen):
 
     def __init__(self, sources_list, queue):
         super().__init__()
-        self.sources_list = sources_list
+        
+        # Filter out dead torrents (seeds = 0) upfront
+        clean_sources = []
+        for s in sources_list:
+            is_torrent = s.meta.get('local', False) or 'magnet:' in s.url.lower() or 'torrentio' in s.provider.lower()
+            if is_torrent:
+                seeds = s.meta.get('seeds')
+                if seeds is not None:
+                    try:
+                        seeds = int(seeds)
+                    except (ValueError, TypeError):
+                        seeds = None
+                if seeds is None:
+                    info = s.meta.get('info', '')
+                    if info:
+                        import re
+                        match = re.search(r'👤\s*(\d+)', info)
+                        if match:
+                            seeds = int(match.group(1))
+                if seeds is not None and seeds <= 0:
+                    # Skip dead torrent (0 seeds)
+                    continue
+            clean_sources.append(s)
+
+        self.sources_list = clean_sources
         self.queue = queue
         self.filtered_sources = []
         
@@ -92,13 +116,18 @@ class SourceSelectScreen(Screen):
 
         # Compute initial totals
         self.total_torrents = sum(
-            1 for s in sources_list 
+            1 for s in self.sources_list 
             if s.meta.get('local', False) or 'magnet:' in s.url.lower() or 'torrentio' in s.provider.lower()
         )
-        self.total_web = len(sources_list) - self.total_torrents
+        self.total_web = len(self.sources_list) - self.total_torrents
 
     def compose(self) -> ComposeResult:
         yield Label("", id="sources-header")
+        yield Tabs(
+            Tab("Wszystko", id="tab-all"),
+            Tab("Torrenty (P2P)", id="tab-torrents"),
+            Tab("Webowe / Direct", id="tab-web"),
+        )
         with Horizontal(id="sources-split"):
             with Vertical(id="sources-left"):
                 yield DataTable(id="sources-table", cursor_type="row")
@@ -286,17 +315,24 @@ class SourceSelectScreen(Screen):
         except Exception:
             pass
 
-    def action_filter_torrents(self) -> None:
-        self.active_type_filter = "torrents"
+    def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
+        tab_id = event.tab.id
+        if tab_id == "tab-all":
+            self.active_type_filter = "all"
+        elif tab_id == "tab-torrents":
+            self.active_type_filter = "torrents"
+        elif tab_id == "tab-web":
+            self.active_type_filter = "web"
         self.apply_filters()
+
+    def action_filter_torrents(self) -> None:
+        self.query_one(Tabs).active = "tab-torrents"
 
     def action_filter_web(self) -> None:
-        self.active_type_filter = "web"
-        self.apply_filters()
+        self.query_one(Tabs).active = "tab-web"
 
     def action_filter_all(self) -> None:
-        self.active_type_filter = "all"
-        self.apply_filters()
+        self.query_one(Tabs).active = "tab-all"
 
     def action_cycle_quality(self) -> None:
         qualities = ["all", "1080p+", "720p+"]

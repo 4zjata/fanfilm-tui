@@ -317,6 +317,7 @@ class source:
                     'direct': direct,
                     'debridonly': False,
                     'local': local,
+                    'seeds': seeds,
                 })
 
         except Exception:
