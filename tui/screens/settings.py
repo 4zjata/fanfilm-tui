@@ -75,6 +75,9 @@ class SettingsScreen(Screen):
             yield Label("qBittorrent Hasło:")
             yield Input(id="qb-password", password=True)
 
+            yield Label("Próg buforowania torrenta (Procent) [np. 1.0]:")
+            yield Input(id="buffering-threshold-input")
+
             yield Label("Automatyczne limity seedowania:")
             seeding_limit_options = [
                 ("Wyłączone (Seeding bez limitu)", "false"),
@@ -136,6 +139,9 @@ class SettingsScreen(Screen):
 
         action_on_limit = settings.getString("torrent.action_on_limit")
         if not action_on_limit: action_on_limit = "stop"
+
+        buffering_threshold = settings.getString("torrent.buffering_threshold")
+        if not buffering_threshold: buffering_threshold = "1.0"
         
         self.query_one("#lang-select", Select).value = lang_val
         self.query_one("#movie-path", Input).value = settings.getString("movie.download.path")
@@ -154,6 +160,7 @@ class SettingsScreen(Screen):
         self.query_one("#ratio-limit-input", Input).value = ratio_limit
         self.query_one("#time-limit-input", Input).value = time_limit
         self.query_one("#seeding-action-select", Select).value = action_on_limit
+        self.query_one("#buffering-threshold-input", Input).value = buffering_threshold
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":
@@ -174,6 +181,7 @@ class SettingsScreen(Screen):
             ratio_limit = self.query_one("#ratio-limit-input", Input).value
             time_limit = self.query_one("#time-limit-input", Input).value
             action_on_limit = self.query_one("#seeding-action-select", Select).value
+            buffering_threshold = self.query_one("#buffering-threshold-input", Input).value
 
             # Validate input values
             try:
@@ -185,6 +193,13 @@ class SettingsScreen(Screen):
                 float(time_limit)
             except ValueError:
                 time_limit = "168"
+
+            try:
+                val = float(buffering_threshold)
+                if val < 0.0:
+                    buffering_threshold = "1.0"
+            except ValueError:
+                buffering_threshold = "1.0"
             
             settings.set("providers.lang", lang_val)
             settings.set("movie.download.path", movie_path)
@@ -203,6 +218,7 @@ class SettingsScreen(Screen):
             settings.set("torrent.ratio_limit", ratio_limit)
             settings.set("torrent.seeding_time_limit", time_limit)
             settings.set("torrent.action_on_limit", action_on_limit)
+            settings.set("torrent.buffering_threshold", buffering_threshold)
             
             # Re-run setup to re-configure enabled providers
             self.app.setup_settings()

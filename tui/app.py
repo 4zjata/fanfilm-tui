@@ -118,6 +118,8 @@ class FanFilmApp(App):
             settings.set("torrent.engine", "qbittorrent")
         if not settings.getString("qbittorrent.url"):
             settings.set("qbittorrent.url", "http://localhost:8080")
+        if not settings.getString("torrent.buffering_threshold"):
+            settings.set("torrent.buffering_threshold", "1.0")
         
         if not settings.getString("qbittorrent.username"):
             qb_user = "admin"

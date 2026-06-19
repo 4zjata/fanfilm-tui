@@ -168,6 +168,14 @@ class StreamScreen(Screen):
                     file_name = target_file['name']
                     file_size = target_file['size']
                     
+                    try:
+                        threshold_val = float(settings.getString("torrent.buffering_threshold") or "1.0")
+                        if threshold_val < 0.0:
+                            threshold_val = 1.0
+                    except ValueError:
+                        threshold_val = 1.0
+                    threshold_ratio = threshold_val / 100.0
+
                     buffered = False
                     while not buffered:
                         if self.cancelled:
@@ -191,8 +199,8 @@ class StreamScreen(Screen):
                         self.app.call_from_thread(self.update_status, status)
                         self.app.call_from_thread(self.update_progress, progress_pct)
                         
-                        # Buffering complete when 1% progress or 5MB is downloaded
-                        if progress >= 0.01 or downloaded >= 5 * 1024 * 1024:
+                        # Buffering complete when target progress or 5MB is downloaded
+                        if progress >= threshold_ratio or downloaded >= 5 * 1024 * 1024:
                             buffered = True
                             break
                             
