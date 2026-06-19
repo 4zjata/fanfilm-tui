@@ -162,7 +162,7 @@ def play_in_mpv(resolved_url, title="", start_time=0):
         print(f"Error preparing mpv command: {e}", file=sys.stderr)
         return None
 
-def get_progress_file():
+def get_db_path():
     from xbmcvfs import translatePath
     userdata = translatePath('special://userdata')
     profile_dir = os.path.join(userdata, 'addon_data', 'plugin.video.fanfilm')
@@ -170,43 +170,109 @@ def get_progress_file():
         os.makedirs(profile_dir, exist_ok=True)
     except:
         pass
-    return os.path.join(profile_dir, 'tui_playback_progress.json')
+    return os.path.join(profile_dir, 'tui_playback.db')
 
-def load_local_progress():
-    path = get_progress_file()
-    if os.path.exists(path):
+def init_db():
+    import sqlite3
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS playback_progress (
+                ref_str TEXT PRIMARY KEY,
+                seconds REAL,
+                percent REAL,
+                title TEXT,
+                year INTEGER,
+                type TEXT,
+                updated_at REAL
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
+
+    # Migrate old JSON file if it exists
+    userdata = os.path.dirname(db_path)
+    old_json = os.path.join(userdata, 'tui_playback_progress.json')
+    if os.path.exists(old_json):
         try:
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            import json
+            with open(old_json, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                conn = sqlite3.connect(db_path)
+                try:
+                    cursor = conn.cursor()
+                    for ref_str, item in data.items():
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO playback_progress (ref_str, seconds, percent, title, year, type, updated_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            ref_str,
+                            float(item.get("seconds", 0)),
+                            float(item.get("percent", 0)),
+                            item.get("title", ""),
+                            int(item["year"]) if item.get("year") is not None else None,
+                            item.get("type", "movie"),
+                            float(item.get("updated_at", time.time()))
+                        ))
+                    conn.commit()
+                finally:
+                    conn.close()
+            os.unlink(old_json)
         except Exception:
             pass
-    return {}
+
+def load_local_progress():
+    import sqlite3
+    init_db()
+    db_path = get_db_path()
+    progress = {}
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT ref_str, seconds, percent, title, year, type, updated_at FROM playback_progress")
+        for row in cursor.fetchall():
+            ref_str, seconds, percent, title, year, itype, updated_at = row
+            progress[ref_str] = {
+                "seconds": seconds,
+                "percent": percent,
+                "title": title,
+                "year": year,
+                "type": itype,
+                "updated_at": updated_at
+            }
+    except Exception:
+        pass
+    finally:
+        conn.close()
+    return progress
 
 def save_local_progress(ref_str, seconds, percent, title, year, itype, extra_data=None):
-    progress = load_local_progress()
+    import sqlite3
+    init_db()
+    db_path = get_db_path()
     try:
         percent = float(percent)
         seconds = float(seconds)
+        year = int(year) if year is not None else None
     except (ValueError, TypeError):
         return
 
-    if percent >= 92.0:
-        if ref_str in progress:
-            del progress[ref_str]
-    else:
-        progress[ref_str] = {
-            "seconds": seconds,
-            "percent": percent,
-            "title": title,
-            "year": year,
-            "type": itype,
-            "updated_at": time.time(),
-            "extra": extra_data or {}
-        }
-        
-    path = get_progress_file()
+    conn = sqlite3.connect(db_path)
     try:
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(progress, f, indent=4, ensure_ascii=False)
+        cursor = conn.cursor()
+        if percent >= 92.0:
+            cursor.execute("DELETE FROM playback_progress WHERE ref_str = ?", (ref_str,))
+        else:
+            cursor.execute("""
+                REPLACE INTO playback_progress (ref_str, seconds, percent, title, year, type, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (ref_str, seconds, percent, title, year, itype, time.time()))
+        conn.commit()
     except Exception:
         pass
+    finally:
+        conn.close()
