@@ -4,6 +4,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Input, DataTable, OptionList
 from textual.widgets.option_list import Option
+from textual.binding import Binding
 
 from tui.screens.base import BaseScreen
 from tui.helpers import rate_source
@@ -15,7 +16,7 @@ class HomeScreen(BaseScreen):
         ("s", "filter_shows", "Seriale"),
         ("a", "filter_all", "Wszystko"),
         ("delete", "delete_progress", "Usuń"),
-        ("d", "delete_progress", "Usuń", False),
+        Binding("d", "delete_progress", "Usuń", show=False),
     ]
 
     DEFAULT_CSS = """
