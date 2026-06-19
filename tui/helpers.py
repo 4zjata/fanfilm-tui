@@ -91,6 +91,27 @@ def rate_source(source) -> int:
     if '4K' in qual: score += 40
     elif '1080' in qual: score += 30
     elif '720' in qual: score += 20
+    
+    # Seed scoring for torrents
+    is_torrent = source.get('local') or 'magnet:' in source.get('url', '').lower() or 'torrentio' in source.get('provider', '').lower()
+    if is_torrent:
+        seeds = None
+        # Try getting seeds directly from meta
+        meta = getattr(source, 'meta', None)
+        if meta and hasattr(meta, 'get'):
+            seeds = meta.get('seeds')
+        if seeds is None:
+            seeds = source.get('seeds')
+        if seeds is None and info:
+            import re
+            match = re.search(r'👤\s*(\d+)', info)
+            if match:
+                seeds = int(match.group(1))
+        
+        if seeds is not None:
+            # Add up to 200 points based on seeds count to prioritize healthy torrents
+            score += min(seeds, 200)
+            
     return score
 
 def play_in_mpv(resolved_url, title=""):

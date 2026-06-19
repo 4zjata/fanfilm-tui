@@ -23,6 +23,7 @@ class SourceSelectScreen(Screen):
         ("a", "filter_all", "Zakładka: Wszystko"),
         ("q", "cycle_quality", "Jakość"),
         ("l", "cycle_lang", "Język"),
+        ("o", "cycle_sort", "Sortowanie"),
     ]
 
     DEFAULT_CSS = """
@@ -113,6 +114,7 @@ class SourceSelectScreen(Screen):
         self.active_type_filter = "all"      # all / torrents / web
         self.active_quality_filter = "all"   # all / 1080p+ / 720p+
         self.active_lang_filter = "all"      # all / pl / en
+        self.active_sort = "default"         # default / seeds / size
 
         # Compute initial totals
         self.total_torrents = sum(
@@ -183,12 +185,18 @@ class SourceSelectScreen(Screen):
             "en": "Tylko EN"
         }[self.active_lang_filter]
         
+        sort_str = {
+            "default": "Ocena",
+            "seeds": "Seedy",
+            "size": "Rozmiar"
+        }[self.active_sort]
+        
         title_str = self.format_media_title()
         
         header.update(
             f"🎬 [bold]{title_str}[/bold]  |  "
             f"💾 Torrenty: [bold]{self.total_torrents}[/bold], Web: [bold]{self.total_web}[/bold]  |  "
-            f"🔍 Typ: [yellow]{type_str}[/yellow], Jakość: [yellow]{qual_str}[/yellow], Język: [yellow]{lang_str}[/yellow]"
+            f"🔍 Typ: [yellow]{type_str}[/yellow], Jakość: [yellow]{qual_str}[/yellow], Język: [yellow]{lang_str}[/yellow], Sort: [yellow]{sort_str}[/yellow]"
         )
 
     def on_mount(self) -> None:
@@ -225,6 +233,40 @@ class SourceSelectScreen(Screen):
                 
             filtered.append(s)
             
+        # Sorting
+        if self.active_sort == "seeds":
+            def get_seeds(source):
+                seeds = source.meta.get('seeds')
+                if seeds is not None:
+                    try:
+                        return int(seeds)
+                    except ValueError:
+                        pass
+                info = source.meta.get('info', '')
+                if info:
+                    import re
+                    match = re.search(r'👤\s*(\d+)', info)
+                    if match:
+                        return int(match.group(1))
+                return 0
+            filtered.sort(key=get_seeds, reverse=True)
+        elif self.active_sort == "size":
+            def get_size_bytes(source):
+                info = source.meta.get('info', '')
+                if info:
+                    import re
+                    match = re.search(r'💾\s*([\d\.]+)\s*(GB|MB|KB|TB)', info, re.IGNORECASE)
+                    if match:
+                        val = float(match.group(1))
+                        unit = match.group(2).upper()
+                        factor = {"KB": 1024, "MB": 1024**2, "GB": 1024**3, "TB": 1024**4}.get(unit, 1)
+                        return int(val * factor)
+                return 0
+            filtered.sort(key=get_size_bytes, reverse=True)
+        else:
+            from tui.helpers import rate_source
+            filtered.sort(key=rate_source, reverse=True)
+
         self.filtered_sources = filtered
         self.update_table()
 
@@ -344,4 +386,10 @@ class SourceSelectScreen(Screen):
         langs = ["all", "pl", "en"]
         idx = langs.index(self.active_lang_filter)
         self.active_lang_filter = langs[(idx + 1) % len(langs)]
+        self.apply_filters()
+
+    def action_cycle_sort(self) -> None:
+        sorts = ["default", "seeds", "size"]
+        idx = sorts.index(self.active_sort)
+        self.active_sort = sorts[(idx + 1) % len(sorts)]
         self.apply_filters()
