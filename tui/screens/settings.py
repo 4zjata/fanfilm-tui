@@ -113,6 +113,7 @@ class SettingsScreen(Screen):
 
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
         self.update_panes(event.tab.id)
+        self.query_one("#settings-content").scroll_to(y=0, animate=False)
 
     def update_panes(self, active_tab_id: str) -> None:
         self.query_one("#pane-general").display = (active_tab_id == "tab-general")
