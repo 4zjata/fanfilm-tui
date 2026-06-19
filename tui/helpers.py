@@ -63,6 +63,11 @@ def rate_source(source) -> int:
     info = source.get('info', '').lower()
     score = 0
     
+    # Prioritize SeaDex curated releases
+    provider = source.get('provider', '').lower()
+    if 'seadex' in provider or source.get('source', '').lower() == 'seadex':
+        score += 50000
+    
     # Read providers language setting
     lang_pref = settings.getString("providers.lang")
     if not lang_pref:
