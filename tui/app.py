@@ -63,6 +63,9 @@ class FanFilmApp(App):
         margin-top: 1;
         padding-right: 1;
     }
+    #pane-general, #pane-paths, #pane-torrents {
+        height: auto;
+    }
     #settings-buttons {
         margin-top: 1;
         height: auto;

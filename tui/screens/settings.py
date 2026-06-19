@@ -115,6 +115,16 @@ class SettingsScreen(Screen):
         self.update_panes(event.tab.id)
         self.query_one("#settings-content").scroll_to(y=0, animate=False)
 
+    def on_descendant_focus(self, event) -> None:
+        try:
+            widget = event.widget
+            if widget:
+                content = self.query_one("#settings-content")
+                if content in widget.ancestors:
+                    content.scroll_to_widget(widget, animate=True)
+        except Exception:
+            pass
+
     def update_panes(self, active_tab_id: str) -> None:
         self.query_one("#pane-general").display = (active_tab_id == "tab-general")
         self.query_one("#pane-paths").display = (active_tab_id == "tab-paths")
