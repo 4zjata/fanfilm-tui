@@ -74,6 +74,26 @@ class SettingsScreen(Screen):
             
             yield Label("qBittorrent Hasło:")
             yield Input(id="qb-password", password=True)
+
+            yield Label("Automatyczne limity seedowania:")
+            seeding_limit_options = [
+                ("Wyłączone (Seeding bez limitu)", "false"),
+                ("Włączone (Zgodnie z limitami poniżej)", "true")
+            ]
+            yield Select(seeding_limit_options, id="seeding-limits-select", allow_blank=False)
+            
+            yield Label("Maksymalny współczynnik (Ratio) [np. 1.0]:")
+            yield Input(id="ratio-limit-input")
+            
+            yield Label("Maksymalny czas seedowania (Godziny) [np. 168]:")
+            yield Input(id="time-limit-input")
+            
+            yield Label("Akcja po przekroczeniu limitu:")
+            action_options = [
+                ("Zatrzymaj seedowanie (Pauza)", "stop"),
+                ("Usuń torrent i pobrane pliki", "delete")
+            ]
+            yield Select(action_options, id="seeding-action-select", allow_blank=False)
             
             with Horizontal(id="settings-buttons"):
                 yield Button("Zapisz", variant="success", id="save-btn")
@@ -104,6 +124,18 @@ class SettingsScreen(Screen):
         
         qb_username = settings.getString("qbittorrent.username")
         qb_password = settings.getString("qbittorrent.password")
+
+        seeding_limits_enabled = settings.getString("torrent.seeding_limits_enabled")
+        if not seeding_limits_enabled: seeding_limits_enabled = "false"
+
+        ratio_limit = settings.getString("torrent.ratio_limit")
+        if not ratio_limit: ratio_limit = "1.0"
+
+        time_limit = settings.getString("torrent.seeding_time_limit")
+        if not time_limit: time_limit = "168"
+
+        action_on_limit = settings.getString("torrent.action_on_limit")
+        if not action_on_limit: action_on_limit = "stop"
         
         self.query_one("#lang-select", Select).value = lang_val
         self.query_one("#movie-path", Input).value = settings.getString("movie.download.path")
@@ -117,6 +149,11 @@ class SettingsScreen(Screen):
         self.query_one("#qb-url", Input).value = qb_url
         self.query_one("#qb-username", Input).value = qb_username
         self.query_one("#qb-password", Input).value = qb_password
+
+        self.query_one("#seeding-limits-select", Select).value = seeding_limits_enabled
+        self.query_one("#ratio-limit-input", Input).value = ratio_limit
+        self.query_one("#time-limit-input", Input).value = time_limit
+        self.query_one("#seeding-action-select", Select).value = action_on_limit
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":
@@ -132,6 +169,22 @@ class SettingsScreen(Screen):
             qb_url = self.query_one("#qb-url", Input).value
             qb_username = self.query_one("#qb-username", Input).value
             qb_password = self.query_one("#qb-password", Input).value
+
+            seeding_limits_enabled = self.query_one("#seeding-limits-select", Select).value
+            ratio_limit = self.query_one("#ratio-limit-input", Input).value
+            time_limit = self.query_one("#time-limit-input", Input).value
+            action_on_limit = self.query_one("#seeding-action-select", Select).value
+
+            # Validate input values
+            try:
+                float(ratio_limit)
+            except ValueError:
+                ratio_limit = "1.0"
+
+            try:
+                float(time_limit)
+            except ValueError:
+                time_limit = "168"
             
             settings.set("providers.lang", lang_val)
             settings.set("movie.download.path", movie_path)
@@ -145,6 +198,11 @@ class SettingsScreen(Screen):
             settings.set("qbittorrent.url", qb_url)
             settings.set("qbittorrent.username", qb_username)
             settings.set("qbittorrent.password", qb_password)
+
+            settings.set("torrent.seeding_limits_enabled", seeding_limits_enabled)
+            settings.set("torrent.ratio_limit", ratio_limit)
+            settings.set("torrent.seeding_time_limit", time_limit)
+            settings.set("torrent.action_on_limit", action_on_limit)
             
             # Re-run setup to re-configure enabled providers
             self.app.setup_settings()

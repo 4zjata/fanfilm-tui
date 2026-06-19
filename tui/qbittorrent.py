@@ -51,12 +51,15 @@ class QBittorrentClient:
         data = {
             "urls": magnet_url,
             "sequentialDownload": "true",
-            "firstLastPiecePrio": "true"
+            "firstLastPiecePrio": "true",
+            "tags": "fanfilm"
         }
             
         try:
             resp = self.session.post(f"{self.url}/api/v2/torrents/add", data=data, timeout=10)
             if resp.status_code == 200:
+                # Also explicitly call addTags for compatibility
+                self.add_tags(info_hash, "fanfilm")
                 return info_hash
         except Exception as e:
             print(f"[qBittorrent] Error adding torrent: {e}")
@@ -133,3 +136,40 @@ class QBittorrentClient:
         except Exception as e:
             print(f"[qBittorrent] Error deleting torrent: {e}")
         return False
+
+    def add_tags(self, info_hash: str, tags: str) -> bool:
+        try:
+            resp = self.session.post(
+                f"{self.url}/api/v2/torrents/addTags",
+                data={"hashes": info_hash, "tags": tags},
+                timeout=5
+            )
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"[qBittorrent] Error adding tags: {e}")
+        return False
+
+    def pause_torrent(self, info_hash: str) -> bool:
+        try:
+            resp = self.session.post(
+                f"{self.url}/api/v2/torrents/pause",
+                data={"hashes": info_hash},
+                timeout=5
+            )
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"[qBittorrent] Error pausing torrent: {e}")
+        return False
+
+    def get_fanfilm_torrents(self) -> list | None:
+        try:
+            resp = self.session.get(
+                f"{self.url}/api/v2/torrents/info",
+                params={"tag": "fanfilm"},
+                timeout=5
+            )
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"[qBittorrent] Error getting fanfilm torrents: {e}")
+        return None

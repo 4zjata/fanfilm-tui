@@ -184,6 +184,10 @@ class FanFilmApp(App):
         self.cf_server = CloudflareServer(self)
         self.cf_server.start()
         
+        # Start background torrent seeding manager
+        from tui.qbittorrent_manager import start_seeding_manager
+        self.seeding_manager_stop_event = start_seeding_manager()
+        
         self.setup_settings()
         
         # Load theme from settings
@@ -197,6 +201,8 @@ class FanFilmApp(App):
     def on_unmount(self):
         if hasattr(self, 'cf_server') and self.cf_server:
             self.cf_server.stop()
+        if hasattr(self, 'seeding_manager_stop_event') and self.seeding_manager_stop_event:
+            self.seeding_manager_stop_event.set()
 
     def action_goto_search(self):
         self.push_screen(HomeScreen(start_search=True))
