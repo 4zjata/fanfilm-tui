@@ -183,13 +183,16 @@ class QBittorrentClient:
         return None
 
     def set_share_limits(self, info_hash: str, ratio_limit: float, seeding_time_limit_minutes: int, action: str = None) -> bool:
-        mapped_action = "Stop"
+        # qBittorrent WebUI API shareLimitAction values:
+        # 0 = Pause (Stop)
+        # 1 = Remove (Remove from list only)
+        # 2 = Remove and delete files (Remove with content)
+        # -1 = Use global setting (Default)
+        mapped_action = -1
         if action == "delete":
-            mapped_action = "RemoveWithContent"
+            mapped_action = 2
         elif action == "stop":
-            mapped_action = "Stop"
-        else:
-            mapped_action = "Default"
+            mapped_action = 0
 
         data = {
             "hashes": info_hash,
