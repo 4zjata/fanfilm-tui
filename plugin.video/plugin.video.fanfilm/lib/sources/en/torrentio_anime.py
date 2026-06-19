@@ -280,15 +280,19 @@ class source:
                             quality = '720p'
                         break
 
-                # Detect if Polish
-                filename_lower = filename.lower()
-                is_pl = False
-                if any(x in filename_lower for x in ['.pl.', 'plk', 'lektor', 'dubbing', 'polski', 'polish', 'multisubs', 'multi-sub', 'pl-dub', 'pl.dub']):
-                    is_pl = True
+                # Detect language and audio type using FanFilm's built-in get_lang_by_type resolver
+                lang_code, audio_type = source_utils.get_lang_by_type(filename)
+                if not lang_code:
+                    lang_code, audio_type = source_utils.get_lang_by_type(title)
+                
+                is_pl = (lang_code == 'pl' or lang_code == 'multi')
                 if '🇵🇱' in title:
                     is_pl = True
+                    lang_code = 'pl'
 
                 info_label = f"👤 {seeds} | 💾 {size_str}"
+                if audio_type:
+                    info_label += f" | {audio_type}"
                 
                 if stream_url:
                     info_label += " (Direct)"

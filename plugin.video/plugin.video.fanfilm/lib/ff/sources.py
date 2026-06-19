@@ -1512,7 +1512,8 @@ class sources:
 
         local = [src for src in self.sources if src.get('local')]
         for src in local:
-            src.update({"language": self._getPrimaryLang() or "en"})
+            if not src.get("language"):
+                src.update({"language": self._getPrimaryLang() or "en"})
         self.sources = [src for src in self.sources if src not in local]
 
         # `direct` na początek listy
