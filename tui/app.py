@@ -109,6 +109,34 @@ class FanFilmApp(App):
         if not settings.getString("tui.poster.type"):
             settings.set("tui.poster.type", "auto")
 
+        # Torrentio & Streaming defaults
+        if not settings.getString("torrentio.enabled"):
+            settings.set("torrentio.enabled", "true")
+        if not settings.getString("torrentio.base_url"):
+            settings.set("torrentio.base_url", "https://torrentio.strem.fun")
+        if not settings.getString("torrent.engine"):
+            settings.set("torrent.engine", "qbittorrent")
+        if not settings.getString("qbittorrent.url"):
+            settings.set("qbittorrent.url", "http://localhost:8080")
+        
+        if not settings.getString("qbittorrent.username"):
+            qb_user = "admin"
+            try:
+                for filename in ["qBittorrent.conf", "qBittorrent-nox.conf"]:
+                    path = os.path.expanduser(f"~/.config/qBittorrent/{filename}")
+                    if os.path.exists(path):
+                        with open(path, "r", encoding="utf-8") as f:
+                            for line in f:
+                                if "WebUI\\Username=" in line:
+                                    qb_user = line.split("=", 1)[1].strip()
+                                    break
+            except Exception:
+                pass
+            settings.set("qbittorrent.username", qb_user)
+
+        if not settings.getString("qbittorrent.password"):
+            settings.set("qbittorrent.password", "")
+
         if not settings.getString("movie.download.path") or not settings.getString("tv.download.path"):
             path = os.path.abspath("./downloads")
             os.makedirs(path, exist_ok=True)
@@ -124,7 +152,7 @@ class FanFilmApp(App):
 
         ENGLISH_PROVIDERS = [
             "african", "animerealms", "dahmermovies", "embed2", "filmlinks4u", 
-            "goojara", "multivid", "onlyflix", "streamimdb", "videasy", 
+            "goojara", "multivid", "onlyflix", "streamimdb", "torrentio", "videasy", 
             "vidlink", "vidzee", "vixsrc", "vsembed_vidsrc", "webstreamr", "yesmovies"
         ]
         POLISH_PROVIDERS = [

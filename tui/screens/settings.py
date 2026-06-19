@@ -54,6 +54,27 @@ class SettingsScreen(Screen):
             ]
             yield Select(adv_options, id="advanced-select", allow_blank=False)
             
+            yield Label("--- Konfiguracja Torrent & Torrentio ---", classes="title-label")
+            
+            yield Label("Torrentio Base URL (Config):")
+            yield Input(id="torrentio-url")
+            
+            yield Label("Silnik strumieniowania torrentów:")
+            engine_options = [
+                ("qBittorrent (Lokalny)", "qbittorrent"),
+                ("WebTorrent CLI (npx)", "webtorrent")
+            ]
+            yield Select(engine_options, id="engine-select", allow_blank=False)
+            
+            yield Label("qBittorrent WebUI URL:")
+            yield Input(id="qb-url")
+            
+            yield Label("qBittorrent Użytkownik:")
+            yield Input(id="qb-username")
+            
+            yield Label("qBittorrent Hasło:")
+            yield Input(id="qb-password", password=True)
+            
             with Horizontal(id="settings-buttons"):
                 yield Button("Zapisz", variant="success", id="save-btn")
                 yield Button("Anuluj", variant="error", id="cancel-btn")
@@ -72,12 +93,30 @@ class SettingsScreen(Screen):
         adv_val = settings.getString("tui.advanced_mode")
         if not adv_val: adv_val = "false"
         
+        torrentio_url = settings.getString("torrentio.base_url")
+        if not torrentio_url: torrentio_url = "https://torrentio.strem.fun"
+        
+        engine_val = settings.getString("torrent.engine")
+        if not engine_val: engine_val = "qbittorrent"
+        
+        qb_url = settings.getString("qbittorrent.url")
+        if not qb_url: qb_url = "http://localhost:8080"
+        
+        qb_username = settings.getString("qbittorrent.username")
+        qb_password = settings.getString("qbittorrent.password")
+        
         self.query_one("#lang-select", Select).value = lang_val
         self.query_one("#movie-path", Input).value = settings.getString("movie.download.path")
         self.query_one("#tv-path", Input).value = settings.getString("tv.download.path")
         self.query_one("#poster-select", Select).value = poster_val
         self.query_one("#theme-select", Select).value = theme_val
         self.query_one("#advanced-select", Select).value = adv_val
+        
+        self.query_one("#torrentio-url", Input).value = torrentio_url
+        self.query_one("#engine-select", Select).value = engine_val
+        self.query_one("#qb-url", Input).value = qb_url
+        self.query_one("#qb-username", Input).value = qb_username
+        self.query_one("#qb-password", Input).value = qb_password
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":
@@ -88,12 +127,24 @@ class SettingsScreen(Screen):
             theme_val = self.query_one("#theme-select", Select).value
             adv_val = self.query_one("#advanced-select", Select).value
             
+            torrentio_url = self.query_one("#torrentio-url", Input).value
+            engine_val = self.query_one("#engine-select", Select).value
+            qb_url = self.query_one("#qb-url", Input).value
+            qb_username = self.query_one("#qb-username", Input).value
+            qb_password = self.query_one("#qb-password", Input).value
+            
             settings.set("providers.lang", lang_val)
             settings.set("movie.download.path", movie_path)
             settings.set("tv.download.path", tv_path)
             settings.set("tui.poster.type", poster_val)
             settings.set("tui.theme", theme_val)
             settings.set("tui.advanced_mode", adv_val)
+            
+            settings.set("torrentio.base_url", torrentio_url)
+            settings.set("torrent.engine", engine_val)
+            settings.set("qbittorrent.url", qb_url)
+            settings.set("qbittorrent.username", qb_username)
+            settings.set("qbittorrent.password", qb_password)
             
             # Re-run setup to re-configure enabled providers
             self.app.setup_settings()
