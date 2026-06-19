@@ -198,6 +198,7 @@ class QBittorrentClient:
             "hashes": info_hash,
             "ratioLimit": ratio_limit,
             "seedingTimeLimit": seeding_time_limit_minutes,
+            "inactiveSeedingTimeLimit": -1,
         }
         
         data_with_action = dict(data)
