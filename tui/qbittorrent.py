@@ -117,17 +117,20 @@ class QBittorrentClient:
                     timeout=5
                 )
             
-            # Ensure sequential download is enabled on the torrent
-            self.session.post(
-                f"{self.url}/api/v2/torrents/toggleSequentialDownload",
-                data={"hashes": info_hash},
-                timeout=5
-            )
-            self.session.post(
-                f"{self.url}/api/v2/torrents/toggleFirstLastPiecePrio",
-                data={"hashes": info_hash},
-                timeout=5
-            )
+            # Ensure sequential download is enabled on the torrent only if not already set
+            info = self.get_torrent_info(info_hash)
+            if not info or not info.get('seq_dl', False):
+                self.session.post(
+                    f"{self.url}/api/v2/torrents/toggleSequentialDownload",
+                    data={"hashes": info_hash},
+                    timeout=5
+                )
+            if not info or not info.get('f_l_piece_prio', False):
+                self.session.post(
+                    f"{self.url}/api/v2/torrents/toggleFirstLastPiecePrio",
+                    data={"hashes": info_hash},
+                    timeout=5
+                )
             return True
         except Exception as e:
             print(f"[qBittorrent] Error setting file priorities: {e}")
