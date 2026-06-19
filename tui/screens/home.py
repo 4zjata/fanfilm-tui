@@ -250,30 +250,13 @@ class HomeScreen(BaseScreen):
     @work(thread=True)
     def load_progress(self):
         try:
-            from lib.ff.kodidb import video_db
             from lib.ff.info import ffinfo
             from tui.helpers import load_local_progress
             
-            plays = video_db.get_plays()
-            in_progress_db = [play for play in plays if play.has_progress]
-            
             local_progress = load_local_progress()
             
-            combined = {}
+            progress_items = []
             
-            # Add Kodi DB entries
-            for play in in_progress_db:
-                try:
-                    ref_str = str(play.ref)
-                    item = ffinfo.get_item(play.ref)
-                    if item:
-                        percent = int(play.percent) if play.percent is not None else 0
-                        ts = play.played_at or 0
-                        combined[ref_str] = (item, percent, ts)
-                except Exception:
-                    pass
-            
-            # Add/overwrite with local TUI entries
             for ref_str, data in local_progress.items():
                 try:
                     from lib.defs import MediaRef
@@ -283,17 +266,16 @@ class HomeScreen(BaseScreen):
                         if item:
                             percent = int(data["percent"])
                             ts = data.get("updated_at", 0)
-                            if ref_str not in combined or ts > combined[ref_str][2]:
-                                combined[ref_str] = (item, percent, ts)
+                            progress_items.append((item, percent, ts))
                 except Exception:
                     pass
             
-            # Sort combined entries by timestamp descending
-            sorted_entries = sorted(combined.items(), key=lambda x: x[1][2], reverse=True)
+            # Sort progress entries by timestamp descending (newest first)
+            progress_items.sort(key=lambda x: x[2], reverse=True)
             
             results = []
             progress_map = {}
-            for ref_str, (item, percent, ts) in sorted_entries:
+            for item, percent, ts in progress_items:
                 results.append(item)
                 progress_map[str(len(results) - 1)] = f"{percent}%"
                     
