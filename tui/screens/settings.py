@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
-from textual.widgets import Label, Input, Select, Button, Footer
+from textual.containers import Vertical, Horizontal, VerticalScroll
+from textual.widgets import Label, Input, Select, Button, Footer, Tabs, Tab
 from textual.screen import Screen
 
 from lib.ff.settings import settings
@@ -12,96 +12,112 @@ class SettingsScreen(Screen):
         with Vertical(id="settings-pane"):
             yield Label("Ustawienia", classes="title-label")
             
-            yield Label("Język źródeł (Scrapery):")
-            lang_options = [("Tylko Polskie", "Polish"), ("Tylko Angielskie", "English"), ("Polskie i Angielskie", "Polish+English")]
-            yield Select(lang_options, id="lang-select", allow_blank=False)
+            yield Tabs(
+                Tab("Ogólne", id="tab-general"),
+                Tab("Ścieżki", id="tab-paths"),
+                Tab("Torrenty", id="tab-torrents"),
+            )
             
-            yield Label("Katalog pobierania filmów:")
-            yield Input(id="movie-path")
-            
-            yield Label("Katalog pobierania seriali:")
-            yield Input(id="tv-path")
-            
-            yield Label("Styl wyświetlania plakatów:")
-            poster_options = [
-                ("Automatyczny (Detekcja)", "auto"),
-                ("SIXEL (Wysoka rozdzielczość)", "sixel"),
-                ("Kitty Protocol (Wysoka rozdzielczość)", "kitty"),
-                ("Blokowy (Unicode Halfcell)", "halfcell"),
-                ("Tekstowy (ASCII Art)", "ascii")
-            ]
-            yield Select(poster_options, id="poster-select", allow_blank=False)
+            with VerticalScroll(id="settings-content"):
+                with Vertical(id="pane-general"):
+                    yield Label("Język źródeł (Scrapery):")
+                    lang_options = [("Tylko Polskie", "Polish"), ("Tylko Angielskie", "English"), ("Polskie i Angielskie", "Polish+English")]
+                    yield Select(lang_options, id="lang-select", allow_blank=False)
+                    
+                    yield Label("Styl wyświetlania plakatów:")
+                    poster_options = [
+                        ("Automatyczny (Detekcja)", "auto"),
+                        ("SIXEL (Wysoka rozdzielczość)", "sixel"),
+                        ("Kitty Protocol (Wysoka rozdzielczość)", "kitty"),
+                        ("Blokowy (Unicode Halfcell)", "halfcell"),
+                        ("Tekstowy (ASCII Art)", "ascii")
+                    ]
+                    yield Select(poster_options, id="poster-select", allow_blank=False)
 
-            yield Label("Motyw kolorystyczny TUI:")
-            theme_options = [
-                ("Textual Dark (Ciemny)", "textual-dark"),
-                ("Textual Light (Jasny)", "textual-light"),
-                ("Tokyo Night (Tokio)", "tokyo-night"),
-                ("Dracula (Wampir)", "dracula"),
-                ("Nord (Północ)", "nord"),
-                ("Gruvbox (Retro)", "gruvbox"),
-                ("Catppuccin Mocha (Kawa)", "catppuccin-mocha"),
-                ("Monokai (Klasyczny)", "monokai"),
-                ("Solarized Dark", "solarized-dark"),
-                ("Rose Pine (Różany)", "rose-pine")
-            ]
-            yield Select(theme_options, id="theme-select", allow_blank=False)
-            
-            yield Label("Tryb zaawansowany scraperów:")
-            adv_options = [
-                ("Wyłączony (Standardowy)", "false"),
-                ("Włączony (Pokazuj błędy)", "true")
-            ]
-            yield Select(adv_options, id="advanced-select", allow_blank=False)
-            
-            yield Label("--- Konfiguracja Torrent & Torrentio ---", classes="title-label")
-            
-            yield Label("Torrentio Base URL (Config):")
-            yield Input(id="torrentio-url")
-            
-            yield Label("Silnik strumieniowania torrentów:")
-            engine_options = [
-                ("qBittorrent (Lokalny)", "qbittorrent"),
-                ("WebTorrent CLI (npx)", "webtorrent")
-            ]
-            yield Select(engine_options, id="engine-select", allow_blank=False)
-            
-            yield Label("qBittorrent WebUI URL:")
-            yield Input(id="qb-url")
-            
-            yield Label("qBittorrent Użytkownik:")
-            yield Input(id="qb-username")
-            
-            yield Label("qBittorrent Hasło:")
-            yield Input(id="qb-password", password=True)
+                    yield Label("Motyw kolorystyczny TUI:")
+                    theme_options = [
+                        ("Textual Dark (Ciemny)", "textual-dark"),
+                        ("Textual Light (Jasny)", "textual-light"),
+                        ("Tokyo Night (Tokio)", "tokyo-night"),
+                        ("Dracula (Wampir)", "dracula"),
+                        ("Nord (Północ)", "nord"),
+                        ("Gruvbox (Retro)", "gruvbox"),
+                        ("Catppuccin Mocha (Kawa)", "catppuccin-mocha"),
+                        ("Monokai (Klasyczny)", "monokai"),
+                        ("Solarized Dark", "solarized-dark"),
+                        ("Rose Pine (Różany)", "rose-pine")
+                    ]
+                    yield Select(theme_options, id="theme-select", allow_blank=False)
+                    
+                    yield Label("Tryb zaawansowany scraperów:")
+                    adv_options = [
+                        ("Wyłączony (Standardowy)", "false"),
+                        ("Włączony (Pokazuj błędy)", "true")
+                    ]
+                    yield Select(adv_options, id="advanced-select", allow_blank=False)
+                    
+                with Vertical(id="pane-paths"):
+                    yield Label("Katalog pobierania filmów:")
+                    yield Input(id="movie-path")
+                    
+                    yield Label("Katalog pobierania seriali:")
+                    yield Input(id="tv-path")
+                    
+                with Vertical(id="pane-torrents"):
+                    yield Label("Silnik strumieniowania torrentów:")
+                    engine_options = [
+                        ("qBittorrent (Lokalny)", "qbittorrent"),
+                        ("WebTorrent CLI (npx)", "webtorrent")
+                    ]
+                    yield Select(engine_options, id="engine-select", allow_blank=False)
 
-            yield Label("Próg buforowania torrenta (Procent) [np. 1.0]:")
-            yield Input(id="buffering-threshold-input")
+                    yield Label("Torrentio Base URL (Config):")
+                    yield Input(id="torrentio-url")
+                    
+                    yield Label("qBittorrent WebUI URL:")
+                    yield Input(id="qb-url")
+                    
+                    yield Label("qBittorrent Użytkownik:")
+                    yield Input(id="qb-username")
+                    
+                    yield Label("qBittorrent Hasło:")
+                    yield Input(id="qb-password", password=True)
 
-            yield Label("Automatyczne limity seedowania:")
-            seeding_limit_options = [
-                ("Wyłączone (Seeding bez limitu)", "false"),
-                ("Włączone (Zgodnie z limitami poniżej)", "true")
-            ]
-            yield Select(seeding_limit_options, id="seeding-limits-select", allow_blank=False)
-            
-            yield Label("Maksymalny współczynnik (Ratio) [np. 1.0]:")
-            yield Input(id="ratio-limit-input")
-            
-            yield Label("Maksymalny czas seedowania (Godziny) [np. 168]:")
-            yield Input(id="time-limit-input")
-            
-            yield Label("Akcja po przekroczeniu limitu:")
-            action_options = [
-                ("Zatrzymaj seedowanie (Pauza)", "stop"),
-                ("Usuń torrent i pobrane pliki", "delete")
-            ]
-            yield Select(action_options, id="seeding-action-select", allow_blank=False)
+                    yield Label("Próg buforowania torrenta (Procent) [np. 5.0]:")
+                    yield Input(id="buffering-threshold-input")
+
+                    yield Label("Automatyczne limity seedowania:")
+                    seeding_limit_options = [
+                        ("Wyłączone (Seeding bez limitu)", "false"),
+                        ("Włączone (Zgodnie z limitami poniżej)", "true")
+                    ]
+                    yield Select(seeding_limit_options, id="seeding-limits-select", allow_blank=False)
+                    
+                    yield Label("Maksymalny współczynnik (Ratio) [np. 1.0]:")
+                    yield Input(id="ratio-limit-input")
+                    
+                    yield Label("Maksymalny czas seedowania (Godziny) [np. 168]:")
+                    yield Input(id="time-limit-input")
+                    
+                    yield Label("Akcja po przekroczeniu limitu:")
+                    action_options = [
+                        ("Zatrzymaj seedowanie (Pauza)", "stop"),
+                        ("Usuń torrent i pobrane pliki", "delete")
+                    ]
+                    yield Select(action_options, id="seeding-action-select", allow_blank=False)
             
             with Horizontal(id="settings-buttons"):
                 yield Button("Zapisz", variant="success", id="save-btn")
                 yield Button("Anuluj", variant="error", id="cancel-btn")
         yield Footer(show_command_palette=False)
+
+    def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
+        self.update_panes(event.tab.id)
+
+    def update_panes(self, active_tab_id: str) -> None:
+        self.query_one("#pane-general").display = (active_tab_id == "tab-general")
+        self.query_one("#pane-paths").display = (active_tab_id == "tab-paths")
+        self.query_one("#pane-torrents").display = (active_tab_id == "tab-torrents")
 
     def on_mount(self) -> None:
         lang_val = settings.getString("providers.lang")
@@ -141,7 +157,7 @@ class SettingsScreen(Screen):
         if not action_on_limit: action_on_limit = "stop"
 
         buffering_threshold = settings.getString("torrent.buffering_threshold")
-        if not buffering_threshold: buffering_threshold = "1.0"
+        if not buffering_threshold: buffering_threshold = "5.0"
         
         self.query_one("#lang-select", Select).value = lang_val
         self.query_one("#movie-path", Input).value = settings.getString("movie.download.path")
@@ -161,6 +177,8 @@ class SettingsScreen(Screen):
         self.query_one("#time-limit-input", Input).value = time_limit
         self.query_one("#seeding-action-select", Select).value = action_on_limit
         self.query_one("#buffering-threshold-input", Input).value = buffering_threshold
+
+        self.update_panes("tab-general")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":

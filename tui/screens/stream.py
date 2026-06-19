@@ -169,11 +169,11 @@ class StreamScreen(Screen):
                     file_size = target_file['size']
                     
                     try:
-                        threshold_val = float(settings.getString("torrent.buffering_threshold") or "1.0")
+                        threshold_val = float(settings.getString("torrent.buffering_threshold") or "5.0")
                         if threshold_val < 0.0:
-                            threshold_val = 1.0
+                            threshold_val = 5.0
                     except ValueError:
-                        threshold_val = 1.0
+                        threshold_val = 5.0
                     threshold_ratio = threshold_val / 100.0
 
                     buffered = False

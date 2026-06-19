@@ -51,12 +51,17 @@ class FanFilmApp(App):
     }
     #settings-pane {
         width: 75;
-        height: auto;
+        height: 34;
         max-height: 90%;
         border: double $accent;
         background: $panel;
         padding: 1 2;
+    }
+    #settings-content {
+        height: 1fr;
         overflow-y: auto;
+        margin-top: 1;
+        padding-right: 1;
     }
     #settings-buttons {
         margin-top: 1;
@@ -118,8 +123,8 @@ class FanFilmApp(App):
             settings.set("torrent.engine", "qbittorrent")
         if not settings.getString("qbittorrent.url"):
             settings.set("qbittorrent.url", "http://localhost:8080")
-        if not settings.getString("torrent.buffering_threshold"):
-            settings.set("torrent.buffering_threshold", "1.0")
+        if not settings.getString("torrent.buffering_threshold") or settings.getString("torrent.buffering_threshold") == "1.0":
+            settings.set("torrent.buffering_threshold", "5.0")
         
         if not settings.getString("qbittorrent.username"):
             qb_user = "admin"
