@@ -156,6 +156,9 @@ class StreamScreen(Screen):
                         client.delete_torrent(info_hash, delete_files=True)
                         return
                         
+                    # Apply seeding limits natively on qBittorrent
+                    client.apply_seeding_limits(info_hash)
+                    
                     # 2. Set file priorities (only download the requested file)
                     client.set_file_priorities(info_hash, file_idx)
                     

@@ -208,13 +208,17 @@ class QBittorrentClient:
             )
             if resp.status_code == 200:
                 return True
+            print(f"[qBittorrent] setShareLimits response: {resp.status_code} - {resp.text}")
+            
             if resp.status_code == 400:
                 resp = self.session.post(
                     f"{self.url}/api/v2/torrents/setShareLimits",
                     data=data,
                     timeout=5
                 )
-                return resp.status_code == 200
+                if resp.status_code == 200:
+                    return True
+                print(f"[qBittorrent] setShareLimits fallback response: {resp.status_code} - {resp.text}")
         except Exception as e:
             print(f"[qBittorrent] Error setting share limits: {e}")
         return False
