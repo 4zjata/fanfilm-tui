@@ -60,6 +60,7 @@ class QBittorrentClient:
             if resp.status_code == 200:
                 # Also explicitly call addTags for compatibility
                 self.add_tags(info_hash, "fanfilm")
+                self.apply_seeding_limits(info_hash)
                 return info_hash
         except Exception as e:
             print(f"[qBittorrent] Error adding torrent: {e}")
@@ -173,3 +174,69 @@ class QBittorrentClient:
         except Exception as e:
             print(f"[qBittorrent] Error getting fanfilm torrents: {e}")
         return None
+
+    def set_share_limits(self, info_hash: str, ratio_limit: float, seeding_time_limit_minutes: int, action: str = None) -> bool:
+        mapped_action = "Stop"
+        if action == "delete":
+            mapped_action = "RemoveWithContent"
+        elif action == "stop":
+            mapped_action = "Stop"
+        else:
+            mapped_action = "Default"
+
+        data = {
+            "hashes": info_hash,
+            "ratioLimit": ratio_limit,
+            "seedingTimeLimit": seeding_time_limit_minutes,
+        }
+        
+        data_with_action = dict(data)
+        data_with_action["shareLimitAction"] = mapped_action
+
+        try:
+            resp = self.session.post(
+                f"{self.url}/api/v2/torrents/setShareLimits",
+                data=data_with_action,
+                timeout=5
+            )
+            if resp.status_code == 200:
+                return True
+            if resp.status_code == 400:
+                resp = self.session.post(
+                    f"{self.url}/api/v2/torrents/setShareLimits",
+                    data=data,
+                    timeout=5
+                )
+                return resp.status_code == 200
+        except Exception as e:
+            print(f"[qBittorrent] Error setting share limits: {e}")
+        return False
+
+    def apply_seeding_limits(self, info_hash: str) -> bool:
+        try:
+            from lib.ff.settings import settings
+            enabled = settings.getBool("torrent.seeding_limits_enabled")
+            if enabled:
+                ratio_limit_str = settings.getString("torrent.ratio_limit")
+                try:
+                    ratio_limit = float(ratio_limit_str) if ratio_limit_str else 1.0
+                except ValueError:
+                    ratio_limit = 1.0
+                    
+                time_limit_str = settings.getString("torrent.seeding_time_limit")
+                try:
+                    time_limit_hours = float(time_limit_str) if time_limit_str else 168.0
+                except ValueError:
+                    time_limit_hours = 168.0
+                
+                seeding_time_limit_minutes = int(time_limit_hours * 60)
+                action = settings.getString("torrent.action_on_limit") or "stop"
+            else:
+                ratio_limit = -1.0
+                seeding_time_limit_minutes = -1
+                action = "Default"
+                
+            return self.set_share_limits(info_hash, ratio_limit, seeding_time_limit_minutes, action)
+        except Exception as e:
+            print(f"[qBittorrent] Error applying seeding limits: {e}")
+            return False
