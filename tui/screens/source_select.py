@@ -202,6 +202,16 @@ class SourceSelectScreen(Screen):
     def on_mount(self) -> None:
         table = self.query_one("#sources-table", DataTable)
         table.add_columns("Serwis / Typ", "Jakość", "Język", "Informacje")
+        
+        # Hide sorting key binding on startup since the default active tab is "Wszystko"
+        import dataclasses
+        if "o" in self._bindings.key_to_bindings:
+            self._bindings.key_to_bindings["o"] = [
+                dataclasses.replace(b, show=False)
+                for b in self._bindings.key_to_bindings["o"]
+            ]
+        self.refresh_bindings()
+
         self.apply_filters()
         table.focus()
 
@@ -365,6 +375,16 @@ class SourceSelectScreen(Screen):
             self.active_type_filter = "torrents"
         elif tab_id == "tab-web":
             self.active_type_filter = "web"
+        
+        is_torrents = (self.active_type_filter == "torrents")
+        import dataclasses
+        if "o" in self._bindings.key_to_bindings:
+            self._bindings.key_to_bindings["o"] = [
+                dataclasses.replace(b, show=is_torrents)
+                for b in self._bindings.key_to_bindings["o"]
+            ]
+        self.refresh_bindings()
+        
         self.apply_filters()
 
     def action_filter_torrents(self) -> None:
@@ -389,6 +409,8 @@ class SourceSelectScreen(Screen):
         self.apply_filters()
 
     def action_cycle_sort(self) -> None:
+        if self.active_type_filter != "torrents":
+            return
         sorts = ["default", "seeds", "size"]
         idx = sorts.index(self.active_sort)
         self.active_sort = sorts[(idx + 1) % len(sorts)]
