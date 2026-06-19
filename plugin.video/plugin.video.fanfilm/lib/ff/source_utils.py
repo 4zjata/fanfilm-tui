@@ -785,10 +785,10 @@ def get_lang_by_type(text: str) -> tuple[str, str]:
     text = text.lower()
     text = re.sub(r"[\][._-]", " ", text)
     text = f" {text} "  # dla jednowyrazowców, jak w ekino
+    if re.search(r'\b(?:plsub[ _.-]{0,2}ai|napisy[ _.-]{0,2}(?:pl[ _.-]{0,2})?ai|ai[ _.-]{0,2}(?:plsub|napisy))\b', text, flags=re.I):
+        return "pl", "Napisy AI"
     if is_ai_lector(text):
         return "pl", "Lektor AI"
-    if re.search(r'\b(?:plsub[ _.-]{0,2}ai|napisy[ _.-]{0,2}ai|ai[ _.-]{0,2}(?:plsub|napisy))\b', text, flags=re.I):
-        return "pl", "Napisy AI"
     # multi: both PL and ENG markers present in the same filename
     if re.search(r'\b(?:po?l|eng?)\b', text) and re.search(r'\beng?\b', text) and re.search(r'\bpo?l\b', text):
         return "multi", ""
