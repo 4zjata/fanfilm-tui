@@ -11,8 +11,6 @@ from tui.helpers import rate_source
 class HomeScreen(BaseScreen):
     BINDINGS = [
         ("escape", "app.pop_screen", "Powrót"),
-        ("m", "focus_menu", "Menu"),
-        ("t", "focus_table", "Tabela"),
         ("f", "filter_movies", "Filmy"),
         ("s", "filter_shows", "Seriale"),
         ("a", "filter_all", "Wszystko"),
@@ -610,8 +608,4 @@ class HomeScreen(BaseScreen):
             from tui.screens.season import SeasonScreen
             self.app.push_screen(SeasonScreen(item))
 
-    def action_focus_menu(self) -> None:
-        self.query_one("#sidebar-list", OptionList).focus()
 
-    def action_focus_table(self) -> None:
-        self.query_one("#results-table", DataTable).focus()
