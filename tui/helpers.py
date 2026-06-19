@@ -232,13 +232,26 @@ def save_local_progress(ref_str, seconds, percent, title, year, itype, extra_dat
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
-        if percent >= 92.0:
+        if percent >= 85.0:
             cursor.execute("DELETE FROM playback_progress WHERE ref_str = ?", (ref_str,))
         else:
             cursor.execute("""
                 REPLACE INTO playback_progress (ref_str, seconds, percent, title, year, type, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (ref_str, seconds, percent, title, year, itype, time.time()))
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+def delete_local_progress(ref_str):
+    import sqlite3
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM playback_progress WHERE ref_str = ?", (ref_str,))
         conn.commit()
     except Exception:
         pass

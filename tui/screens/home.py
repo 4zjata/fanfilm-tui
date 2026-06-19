@@ -14,6 +14,8 @@ class HomeScreen(BaseScreen):
         ("f", "filter_movies", "Filmy"),
         ("s", "filter_shows", "Seriale"),
         ("a", "filter_all", "Wszystko"),
+        ("delete", "delete_progress", "Usuń"),
+        ("d", "delete_progress", "Usuń", False),
     ]
 
     DEFAULT_CSS = """
@@ -62,6 +64,7 @@ class HomeScreen(BaseScreen):
         self.is_loading_more = False
         self.has_more = True
         self.current_search_query = ""
+        self.highlighted_idx = None
 
     def compose_left(self) -> ComposeResult:
         with Horizontal():
@@ -116,6 +119,7 @@ class HomeScreen(BaseScreen):
         table.clear()
         self.results = []
         self.progress_map = {}
+        self.highlighted_idx = None
         
         inp = self.query_one("#search-input", Input)
         
@@ -457,6 +461,7 @@ class HomeScreen(BaseScreen):
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         idx = int(event.row_key.value)
+        self.highlighted_idx = idx
         if idx >= len(self.results): return
         item = self.results[idx]
         if hasattr(self, "_meta_timer") and self._meta_timer:
@@ -617,5 +622,26 @@ class HomeScreen(BaseScreen):
         else:
             from tui.screens.season import SeasonScreen
             self.app.push_screen(SeasonScreen(item))
+
+    def action_delete_progress(self) -> None:
+        if self.current_menu_id != "menu-progress":
+            return
+        if self.highlighted_idx is None or self.highlighted_idx < 0 or self.highlighted_idx >= len(self.results):
+            return
+        
+        try:
+            item = self.results[self.highlighted_idx]
+            ref_str = str(item.ref)
+            
+            from tui.helpers import delete_local_progress
+            delete_local_progress(ref_str)
+            
+            self.notify(f"Usunięto z w toku: {item.title}")
+            
+            # Reset highlight state and reload list
+            self.highlighted_idx = None
+            self.load_progress()
+        except Exception as e:
+            self.app.log(f"Error deleting progress item: {e}")
 
 
