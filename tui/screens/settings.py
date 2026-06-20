@@ -77,6 +77,9 @@ class SettingsScreen(Screen):
 
                     yield Label("Discord RPC - Pokazuj pozostały czas:")
                     yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-time-select", allow_blank=False)
+
+                    yield Label("Discord RPC - Pokazuj ikony (grafiki):")
+                    yield Select([("Tak", "true"), ("Nie", "false")], id="rpc-images-select", allow_blank=False)
                     
                 with Vertical(id="pane-paths"):
                     yield Label("Katalog pobierania filmów:")
@@ -182,6 +185,9 @@ class SettingsScreen(Screen):
 
         rpc_time = settings.getString("tui.discord_show_time")
         if not rpc_time: rpc_time = "true"
+
+        rpc_images = settings.getString("tui.discord_show_images")
+        if not rpc_images: rpc_images = "false"
         
         torrentio_url = settings.getString("torrentio.base_url")
         if not torrentio_url: torrentio_url = "https://torrentio.strem.fun"
@@ -222,6 +228,7 @@ class SettingsScreen(Screen):
         self.query_one("#rpc-scraping-select", Select).value = rpc_scraping
         self.query_one("#rpc-watching-select", Select).value = rpc_watching
         self.query_one("#rpc-time-select", Select).value = rpc_time
+        self.query_one("#rpc-images-select", Select).value = rpc_images
         self.query_one("#rpc-client-id", Input).value = discord_client_id
         
         self.query_one("#torrentio-url", Input).value = torrentio_url
@@ -254,6 +261,7 @@ class SettingsScreen(Screen):
             rpc_scraping = self.query_one("#rpc-scraping-select", Select).value
             rpc_watching = self.query_one("#rpc-watching-select", Select).value
             rpc_time = self.query_one("#rpc-time-select", Select).value
+            rpc_images = self.query_one("#rpc-images-select", Select).value
             
             torrentio_url = self.query_one("#torrentio-url", Input).value
             engine_val = self.query_one("#engine-select", Select).value
@@ -297,6 +305,7 @@ class SettingsScreen(Screen):
             settings.set("tui.discord_show_scraping", rpc_scraping)
             settings.set("tui.discord_show_watching", rpc_watching)
             settings.set("tui.discord_show_time", rpc_time)
+            settings.set("tui.discord_show_images", rpc_images)
 
             if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
                 self.app.discord_rpc.update_config(rpc_enabled == "true", rpc_client_id)

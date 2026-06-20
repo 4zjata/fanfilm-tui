@@ -128,6 +128,8 @@ class FanFilmApp(App):
             settings.set("tui.discord_show_watching", "true")
         if not settings.getString("tui.discord_show_time"):
             settings.set("tui.discord_show_time", "true")
+        if not settings.getString("tui.discord_show_images"):
+            settings.set("tui.discord_show_images", "false")
 
         # Torrentio & Streaming defaults
         if not settings.getString("torrentio.enabled"):

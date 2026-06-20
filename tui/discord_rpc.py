@@ -14,6 +14,15 @@ class DiscordRPCManager:
         self._connected = False
         self._last_payload = None
 
+    def _log(self, msg):
+        try:
+            import xbmc
+            xbmc.log(msg)
+        except Exception:
+            pass
+        print(msg, file=sys.stderr)
+
+
     def start(self):
         if self._thread is not None:
             return
@@ -131,7 +140,7 @@ class DiscordRPCManager:
                         try:
                             self._client.clear()
                         except Exception as e:
-                            print(f"[Discord RPC] Clear failed: {type(e).__name__} - {e}", file=sys.stderr)
+                            self._log(f"[Discord RPC] Clear failed: {type(e).__name__} - {e}")
                             self._disconnect_client()
                 elif action == "update" and self.enabled:
                     if self._connected and self._client:
@@ -150,28 +159,41 @@ class DiscordRPCManager:
                                 break
 
                         try:
+                            from lib.ff.settings import settings
+                            show_images = settings.getString("tui.discord_show_images") == "true"
+
+                            state_str = current_item["state"]
+                            if state_str and len(state_str) < 2:
+                                state_str = state_str.ljust(2)
+                            details_str = current_item["details"]
+                            if details_str and len(details_str) < 2:
+                                details_str = details_str.ljust(2)
+
                             kwargs = {
-                                "state": current_item["state"][:128] if current_item["state"] else None,
-                                "details": current_item["details"][:128] if current_item["details"] else None,
-                                "large_image": "icon",
-                                "large_text": "FanFilm TUI"
+                                "state": state_str[:128] if state_str else None,
+                                "details": details_str[:128] if details_str else None,
                             }
-                            if current_item.get("is_watching"):
-                                kwargs["small_image"] = "play"
-                                kwargs["small_text"] = "Odtwarzanie"
-                            else:
-                                kwargs["small_image"] = "menu"
-                                kwargs["small_text"] = "Menu"
+                            if show_images:
+                                kwargs["large_image"] = "icon"
+                                kwargs["large_text"] = "FanFilm TUI"
+                                if current_item.get("is_watching"):
+                                    kwargs["small_image"] = "play"
+                                    kwargs["small_text"] = "Odtwarzanie"
+                                else:
+                                    kwargs["small_image"] = "menu"
+                                    kwargs["small_text"] = "Menu"
 
                             if current_item.get("start_time"):
                                 kwargs["start"] = int(current_item["start_time"])
                             if current_item.get("end_time"):
                                 kwargs["end"] = int(current_item["end_time"])
 
+                            self._log(f"[Discord RPC] Updating status: state={kwargs.get('state')!r}, details={kwargs.get('details')!r}, images={show_images}")
                             self._client.update(**kwargs)
+                            self._log(f"[Discord RPC] Status updated successfully!")
                         except Exception as e:
                             # If update fails, assume disconnected and clean up
-                            print(f"[Discord RPC] Update failed: {type(e).__name__} - {e}", file=sys.stderr)
+                            self._log(f"[Discord RPC] Update failed: {type(e).__name__} - {e}")
                             self._disconnect_client()
                 
                 self._queue.task_done()
@@ -179,7 +201,7 @@ class DiscordRPCManager:
             except Exception as e:
                 # Top level error guard for thread safety
                 try:
-                    print(f"Error in Discord RPC worker loop: {e}", file=sys.stderr)
+                    self._log(f"Error in Discord RPC worker loop: {e}")
                 except Exception:
                     pass
                 time.sleep(1.0)
@@ -189,26 +211,26 @@ class DiscordRPCManager:
             return
         try:
             from pypresence import Presence
-            print(f"[Discord RPC] Connecting to Discord client with ID: {self.client_id}...", file=sys.stderr)
+            self._log(f"[Discord RPC] Connecting to Discord client with ID: {self.client_id}...")
             self._client = Presence(self.client_id)
             self._client.connect()
             self._connected = True
-            print(f"[Discord RPC] Connected successfully!", file=sys.stderr)
+            self._log(f"[Discord RPC] Connected successfully!")
             # Resend last status on successful connection
             if self._last_payload:
-                print(f"[Discord RPC] Resending last status on successful connect", file=sys.stderr)
+                self._log(f"[Discord RPC] Resending last status on successful connect")
                 self._queue.put(self._last_payload)
         except Exception as e:
             self._connected = False
             self._client = None
-            print(f"[Discord RPC] Connection failed: {type(e).__name__} - {e}", file=sys.stderr)
+            self._log(f"[Discord RPC] Connection failed: {type(e).__name__} - {e}")
 
     def _disconnect_client(self):
         if self._client:
             try:
-                print(f"[Discord RPC] Closing connection...", file=sys.stderr)
+                self._log(f"[Discord RPC] Closing connection...")
                 self._client.close()
             except Exception as e:
-                print(f"[Discord RPC] Exception during connection close: {e}", file=sys.stderr)
+                self._log(f"[Discord RPC] Exception during connection close: {e}")
         self._client = None
         self._connected = False
