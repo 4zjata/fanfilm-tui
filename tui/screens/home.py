@@ -94,6 +94,7 @@ class HomeScreen(BaseScreen):
         self.has_more = True
         self.current_search_query = ""
         self.highlighted_idx = None
+        self.romanized_refs = set()
 
     def compose_left(self) -> ComposeResult:
         with Horizontal():
@@ -407,16 +408,7 @@ class HomeScreen(BaseScreen):
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
-            title = item.title
-            if item.ref.is_episode:
-                show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
-                title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
-            
-            title = sanitize_title(title)
-                
-            if self.current_menu_id == "menu-progress":
-                pct = self.progress_map.get(str(i), "0%")
-                title = f"{title} ({pct})"
+            title = self.get_display_title(i, item)
                 
             table.add_row(
                 title, 
@@ -437,8 +429,10 @@ class HomeScreen(BaseScreen):
         self.results = results
         self.progress_map = progress_map or {}
         self.current_page = page
+        self.romanized_refs.clear()
         self.prepare_media_table()
         self.update_table_rows()
+        self.fetch_romanized_titles(results, menu_id)
 
     def update_genres_table_rows(self) -> None:
         table = self.query_one("#results-table", DataTable)
@@ -479,9 +473,11 @@ class HomeScreen(BaseScreen):
         self.results = [None] + list(results)
         self.progress_map = {}
         self.current_page = page
+        self.romanized_refs.clear()
         
         self.prepare_media_table()
         self.update_table_rows()
+        self.fetch_romanized_titles(self.results, menu_id)
 
     def action_filter_movies(self) -> None:
         self.media_filter = "movie"
@@ -611,10 +607,7 @@ class HomeScreen(BaseScreen):
             if item.ref.is_episode:
                 itype = "Odcinek"
                 
-            title = item.title
-            if item.ref.is_episode:
-                show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
-                title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
+            title = self.get_display_title(idx, item)
                 
             table.add_row(
                 title, 
@@ -624,6 +617,7 @@ class HomeScreen(BaseScreen):
             )
             
         self.is_loading_more = False
+        self.fetch_romanized_titles(self.results, menu_id)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         idx = int(event.row_key.value)
@@ -696,5 +690,84 @@ class HomeScreen(BaseScreen):
             self.load_progress()
         except Exception as e:
             self.app.log(f"Error deleting progress item: {e}")
+
+    def get_display_title(self, i, item):
+        title = item.title
+        if item.ref.is_episode:
+            show_title = item.vtag.getEnglishTvShowTitle() or item.vtag.getTvShowTitle() or "Serial"
+            title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
+            
+        title = sanitize_title(title)
+        
+        if self.current_menu_id == "menu-progress":
+            pct = self.progress_map.get(str(i), "0%")
+            title = f"{title} ({pct})"
+            
+        return title
+
+    @work(thread=True)
+    def fetch_romanized_titles(self, results, menu_id):
+        local_results = list(results)
+        from tui.helpers import is_latin_only
+        from lib.ff.tmdb import tmdb
+        
+        indices_to_fetch = []
+        for i, item in enumerate(local_results):
+            if item is None or isinstance(item, dict):
+                continue
+            if item.ref in self.romanized_refs:
+                continue
+                
+            title = item.title
+            if item.ref.is_episode:
+                show_title = item.vtag.getEnglishTvShowTitle() or item.vtag.getTvShowTitle() or "Serial"
+                title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
+                
+            if not is_latin_only(title):
+                indices_to_fetch.append((i, item))
+                
+        if not indices_to_fetch:
+            return
+            
+        # Add to set so we don't request them again
+        for _, item in indices_to_fetch:
+            self.romanized_refs.add(item.ref)
+            
+        refs = [it.ref for _, it in indices_to_fetch]
+        try:
+            en_items = tmdb.get_skel_en_media(refs)
+            for i, item in indices_to_fetch:
+                if self.current_menu_id != menu_id:
+                    break
+                    
+                ref = item.ref
+                en_data = en_items.get(ref)
+                if en_data:
+                    en_title = en_data.get('name') or en_data.get('title')
+                    if en_title:
+                        if ref.is_episode:
+                            item.vtag.setEnglishTvShowTitle(en_title)
+                        else:
+                            item.title = en_title
+                        
+                        self.app.call_from_thread(self.update_single_title, i, menu_id)
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+
+    def update_single_title(self, index, menu_id):
+        if self.current_menu_id != menu_id:
+            return
+        table = self.query_one("#results-table", DataTable)
+        try:
+            item = self.results[index]
+            new_title = self.get_display_title(index, item)
+            col_key = list(table.columns.keys())[0]
+            table.update_cell(str(index), col_key, new_title)
+            
+            if self.highlighted_idx == index:
+                self.query_one("#meta-panel").update_meta(item)
+        except Exception:
+            pass
 
 
