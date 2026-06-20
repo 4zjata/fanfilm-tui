@@ -48,6 +48,10 @@ class HomeScreen(BaseScreen):
         height: 100%;
         background: transparent;
         border: none;
+        padding: 0;
+    }
+    #sidebar-list > .option-list--option {
+        padding: 0 1;
     }
     #sidebar-list > .option-list--separator {
         color: $primary-darken-2;
@@ -95,17 +99,17 @@ class HomeScreen(BaseScreen):
         with Horizontal():
             with Vertical(id="home-sidebar"):
                 yield OptionList(
-                    Option("🏠\uFE0F Start", id="menu-trending"),
+                    Option("\uf015 Start", id="menu-trending"),
                     None,
-                    Option("🍿\uFE0F Popularne", id="menu-popular"),
+                    Option("\U000f06bd Popularne", id="menu-popular"),
                     None,
-                    Option("⭐\uFE0F Najlepsze", id="menu-top-rated"),
+                    Option("\uf005 Najlepsze", id="menu-top-rated"),
                     None,
-                    Option("🎭\uFE0F Gatunki", id="menu-genres"),
+                    Option("\U000f040d Gatunki", id="menu-genres"),
                     None,
-                    Option("⏳\uFE0F W toku", id="menu-progress"),
+                    Option("\uf252 W toku", id="menu-progress"),
                     None,
-                    Option("🔍\uFE0F Szukaj", id="menu-search"),
+                    Option("\uf002 Szukaj", id="menu-search"),
                     id="sidebar-list"
                 )
             with Vertical(id="home-main"):
