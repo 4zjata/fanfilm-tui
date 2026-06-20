@@ -56,7 +56,7 @@ class HomeScreen(BaseScreen):
     #sidebar-list:focus > .option-list--option-highlighted {
         background: $accent;
         color: $text;
-        text-style: bold;
+        text-style: none;
     }
     /* Menu highlight when inactive/unfocused */
     #sidebar-list > .option-list--option-highlighted {
