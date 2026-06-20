@@ -292,7 +292,7 @@ class HomeScreen(BaseScreen):
                 yield OptionList(
                     Option("\uf015 Start", id="menu-trending"),
                     None,
-                    Option("\ue232 Popularne", id="menu-popular"),
+                    Option("\U000f0422 Popularne", id="menu-popular"),
                     None,
                     Option("\uf005 Najlepsze", id="menu-top-rated"),
                     None,
@@ -459,6 +459,15 @@ class HomeScreen(BaseScreen):
             traceback.print_exc(file=sys.stderr)
             self.app.call_from_thread(self.load_failed, str(e), "menu-top-rated")
 
+    def get_equivalent_genre_id(self, gid, source_type):
+        mapping = {
+            28: 10759, 12: 10759, 16: 16, 35: 35, 80: 80, 99: 99, 18: 18, 
+            10751: 10751, 14: 10765, 27: 10765, 9648: 9648, 10749: 18, 
+            878: 10765, 53: 80, 10752: 10768, 37: 37,
+            10759: [28, 12], 10762: 10751, 10765: [878, 14], 10768: 10752
+        }
+        return mapping.get(gid)
+
     @work(thread=True)
     def load_genres(self):
         try:
@@ -466,16 +475,32 @@ class HomeScreen(BaseScreen):
             movie_genres = list(tmdb.genres('movie'))
             show_genres = list(tmdb.genres('show'))
             
-            results = []
+            merged = {}
             for g in movie_genres:
-                g_copy = g.copy()
-                g_copy['media_type'] = 'movie'
-                results.append(g_copy)
+                name = g.get('name')
+                if name:
+                    key = name.lower().strip()
+                    merged[key] = {
+                        'name': name,
+                        'movie_id': g.get('id'),
+                        'show_id': None
+                    }
             for g in show_genres:
-                g_copy = g.copy()
-                g_copy['media_type'] = 'show'
-                results.append(g_copy)
-                
+                name = g.get('name')
+                if name:
+                    key = name.lower().strip()
+                    if key in merged:
+                        merged[key]['show_id'] = g.get('id')
+                    else:
+                        merged[key] = {
+                            'name': name,
+                            'movie_id': None,
+                            'show_id': g.get('id')
+                        }
+            
+            results = list(merged.values())
+            results.sort(key=lambda x: x['name'])
+            
             self.app.call_from_thread(self.show_genres, results, "menu-genres")
         except Exception as e:
             import traceback
@@ -495,6 +520,45 @@ class HomeScreen(BaseScreen):
             import traceback
             traceback.print_exc(file=sys.stderr)
             menu_id = f"genre-{media_type}:{genre_id}"
+            self.app.call_from_thread(self.load_failed, str(e), menu_id)
+
+    @work(thread=True)
+    def load_genre_results_combined(self, movie_id, show_id, genre_name, page=1):
+        try:
+            from lib.ff.tmdb import tmdb
+            
+            movies = []
+            shows = []
+            
+            if movie_id:
+                m_ids = movie_id if isinstance(movie_id, list) else [movie_id]
+                for mid in m_ids:
+                    movies.extend(list(tmdb.discover('movie', with_genres=str(mid), page=page))[:15])
+                    
+            if show_id:
+                s_ids = show_id if isinstance(show_id, list) else [show_id]
+                for sid in s_ids:
+                    shows.extend(list(tmdb.discover('show', with_genres=str(sid), page=page))[:15])
+                    
+            results = []
+            for m, s in zip(movies, shows):
+                results.append(m)
+                results.append(s)
+            if len(movies) > len(shows):
+                results.extend(movies[len(shows):])
+            elif len(shows) > len(movies):
+                results.extend(shows[len(movies):])
+                
+            m_str = ",".join(str(x) for x in movie_id) if isinstance(movie_id, list) else str(movie_id)
+            s_str = ",".join(str(x) for x in show_id) if isinstance(show_id, list) else str(show_id)
+            menu_id = f"genre-combined:{m_str}:{s_str}"
+            self.app.call_from_thread(self.show_genre_results, results, menu_id, genre_name, page=page)
+        except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            m_str = ",".join(str(x) for x in movie_id) if isinstance(movie_id, list) else str(movie_id)
+            s_str = ",".join(str(x) for x in show_id) if isinstance(show_id, list) else str(show_id)
+            menu_id = f"genre-combined:{m_str}:{s_str}"
             self.app.call_from_thread(self.load_failed, str(e), menu_id)
 
     @work(thread=True)
@@ -649,13 +713,19 @@ class HomeScreen(BaseScreen):
         table.add_columns("Nazwa gatunku", "Typ")
         
         for i, genre in enumerate(self.results):
-            media_type = genre.get('media_type', 'movie')
-            if self.media_filter == "movie" and media_type != "movie":
+            movie_id = genre.get('movie_id')
+            show_id = genre.get('show_id')
+            if self.media_filter == "movie" and not movie_id:
                 continue
-            if self.media_filter == "show" and media_type != "show":
+            if self.media_filter == "show" and not show_id:
                 continue
                 
-            itype = "Filmy" if media_type == "movie" else "Seriale"
+            types = []
+            if movie_id:
+                types.append("Filmy")
+            if show_id:
+                types.append("Seriale")
+            itype = " + ".join(types)
             table.add_row(
                 sanitize_title(genre.get('name', 'Nieznany')),
                 itype,
@@ -773,6 +843,32 @@ class HomeScreen(BaseScreen):
                     results.extend(movies[len(shows):])
                 elif len(shows) > len(movies):
                     results.extend(shows[len(movies):])
+            elif menu_id.startswith("genre-combined:"):
+                parts = menu_id.split(":")
+                movie_ids_str = parts[1]
+                show_ids_str = parts[2]
+                
+                movies = []
+                shows = []
+                
+                if movie_ids_str and movie_ids_str != "None":
+                    m_ids = [int(x) for x in movie_ids_str.split(",") if x.replace("-", "").isdigit()]
+                    for mid in m_ids:
+                        movies.extend(list(tmdb.discover('movie', with_genres=str(mid), page=page))[:15])
+                        
+                if show_ids_str and show_ids_str != "None":
+                    s_ids = [int(x) for x in show_ids_str.split(",") if x.replace("-", "").isdigit()]
+                    for sid in s_ids:
+                        shows.extend(list(tmdb.discover('show', with_genres=str(sid), page=page))[:15])
+                        
+                results = []
+                for m, s in zip(movies, shows):
+                    results.append(m)
+                    results.append(s)
+                if len(movies) > len(shows):
+                    results.extend(movies[len(shows):])
+                elif len(shows) > len(movies):
+                    results.extend(shows[len(movies):])
             elif menu_id.startswith("genre-"):
                 parts = menu_id.split("-")[1].split(":")
                 media_type = parts[0]
@@ -837,11 +933,18 @@ class HomeScreen(BaseScreen):
         # 1. If in genre list mode
         if self.current_menu_id == "menu-genres":
             genre = self.results[idx]
-            genre_id = genre['id']
             genre_name = genre['name']
-            media_type = genre.get('media_type', 'movie')
+            movie_id = genre.get('movie_id')
+            show_id = genre.get('show_id')
             
-            self.current_menu_id = f"genre-{media_type}:{genre_id}"
+            if not movie_id and show_id:
+                movie_id = self.get_equivalent_genre_id(show_id, 'show')
+            if not show_id and movie_id:
+                show_id = self.get_equivalent_genre_id(movie_id, 'movie')
+                
+            m_str = ",".join(str(x) for x in movie_id) if isinstance(movie_id, list) else str(movie_id)
+            s_str = ",".join(str(x) for x in show_id) if isinstance(show_id, list) else str(show_id)
+            self.current_menu_id = f"genre-combined:{m_str}:{s_str}"
             
             # Reset page states for genre results
             self.current_page = 1
@@ -851,7 +954,7 @@ class HomeScreen(BaseScreen):
             table = self.query_one("#results-table", DataTable)
             table.clear()
             
-            self.load_genre_results(media_type, genre_id, genre_name)
+            self.load_genre_results_combined(movie_id, show_id, genre_name)
             if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
                 self.app.discord_rpc.set_status("Przegląda menu", f"Gatunek: {genre_name}")
             return
