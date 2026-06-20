@@ -223,7 +223,7 @@ class FanFilmApp(App):
         self.discord_rpc = DiscordRPCManager(client_id=rpc_client_id, enabled=rpc_enabled)
         self.discord_rpc.start()
         
-        self.push_screen(HomeScreen())
+        self.switch_screen(HomeScreen())
 
     def on_unmount(self):
         if hasattr(self, 'cf_server') and self.cf_server:
@@ -232,7 +232,18 @@ class FanFilmApp(App):
             self.discord_rpc.shutdown()
 
     def action_goto_search(self):
-        self.push_screen(HomeScreen(start_search=True))
+        while len(self.screen_stack) > 1:
+            self.pop_screen()
+            
+        if isinstance(self.screen, HomeScreen):
+            self.screen.query_one("#sidebar-list").highlighted_index = 10  # Szukaj
+            self.screen.current_menu_id = "menu-search"
+            self.screen.query_one("#search-input").display = True
+            self.screen.query_one("#search-input").focus()
+            if hasattr(self, "discord_rpc") and self.discord_rpc:
+                self.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
+        else:
+            self.switch_screen(HomeScreen(start_search=True))
 
     def action_goto_settings(self):
         # We will implement this screen next

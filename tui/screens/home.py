@@ -11,7 +11,7 @@ from tui.helpers import rate_source
 
 class HomeScreen(BaseScreen):
     BINDINGS = [
-        ("escape", "escape", "Powrót"),
+        Binding("escape", "escape", "Powrót", show=False),
         ("f", "filter_movies", "Filmy"),
         ("s", "filter_shows", "Seriale"),
         ("a", "filter_all", "Wszystko"),
