@@ -27,7 +27,9 @@ class MetaPanel(Vertical):
         title = sanitize_title(item.title)
         year = item.year or vtag.getYear() or "????"
         rating = f"{vtag.getRating():.1f}/10" if vtag.getRating() else "N/A"
-        genre = vtag.getGenre() or "Nieznany"
+        genre = "Nieznany"
+        if hasattr(self.screen, "get_genre_string"):
+            genre = self.screen.get_genre_string(item)
         plot = get_truncated_plot(vtag.getPlot() or "Brak opisu.")
         
         details = f"[bold cyan]Tytuł:[/bold cyan] {title}\n"

@@ -11,6 +11,17 @@ from tui.screens.base import BaseScreen
 from tui.helpers import rate_source, sanitize_title
 
 class HomeScreen(BaseScreen):
+    GENRE_MAP = {
+        28: "Akcja", 12: "Przygodowy", 16: "Animacja", 35: "Komedia",
+        80: "Kryminał", 99: "Dokumentalny", 18: "Dramat", 10751: "Familijny",
+        14: "Fantasy", 36: "Historyczny", 27: "Horror", 10402: "Muzyczny",
+        9648: "Tajemnica", 10749: "Romantyczny", 878: "Sci-Fi", 10770: "Film TV",
+        53: "Thriller", 10752: "Wojenny", 37: "Western",
+        10759: "Akcja i Przygoda", 10762: "Dla dzieci", 10763: "Wiadomości",
+        10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Telenowela",
+        10767: "Talk-show", 10768: "Wojna i Polityka"
+    }
+
     BINDINGS = [
         Binding("escape", "escape", "Powrót", show=False),
         ("f", "filter_movies", "Filmy"),
@@ -115,7 +126,7 @@ class HomeScreen(BaseScreen):
             # Table container width
             container_w = table.container_size.width
             if container_w > 0:
-                target_w = max(25, container_w - other_w - margin)
+                target_w = max(10, container_w - other_w - margin)
                 col.auto_width = False
                 col.width = target_w
                 table._require_update_dimensions = True
@@ -125,6 +136,82 @@ class HomeScreen(BaseScreen):
 
     def on_resize(self) -> None:
         self.recalculate_column_widths()
+
+    def get_genre_string(self, item) -> str:
+        if item is None:
+            return "Nieznany"
+            
+        def extract(it):
+            if it is None:
+                return None
+            vtag = it.getVideoInfoTag()
+            genre = vtag.getGenre()
+            if genre and genre != "Nieznany":
+                return genre
+                
+            if hasattr(it, "source_data") and isinstance(it.source_data, dict):
+                genre_ids = it.source_data.get("genre_ids")
+                if genre_ids and isinstance(genre_ids, list):
+                    names = []
+                    for gid in genre_ids:
+                        name = self.GENRE_MAP.get(gid) or self.GENRE_MAP.get(str(gid)) or self.GENRE_MAP.get(int(gid) if isinstance(gid, str) and gid.isdigit() else None)
+                        if name:
+                            names.append(name)
+                    if names:
+                        return ", ".join(names[:2])
+                        
+                genres_list = it.source_data.get("genres")
+                if genres_list and isinstance(genres_list, list):
+                    names = []
+                    for g in genres_list:
+                        if isinstance(g, dict) and g.get("name"):
+                            names.append(g["name"])
+                    if names:
+                        return ", ".join(names[:2])
+            return None
+
+        # 1. Try item itself
+        g = extract(item)
+        if g:
+            return g
+            
+        # 2. Try show_item if available
+        if hasattr(item, "show_item") and item.show_item:
+            g = extract(item.show_item)
+            if g:
+                return g
+                
+        # 3. Resolve show item from cache/API for season or episode
+        if hasattr(item, "ref") and (item.ref.is_season or item.ref.is_episode):
+            try:
+                from lib.defs import MediaRef
+                from lib.ff.info import ffinfo
+                show_ref = MediaRef(type="show", ffid=item.ref.ffid)
+                show_item = ffinfo.get_item(show_ref)
+                g = extract(show_item)
+                if g:
+                    return g
+            except Exception:
+                pass
+                
+        return "Nieznany"
+
+    @work(thread=True)
+    def load_genre_map(self):
+        try:
+            from lib.ff.tmdb import tmdb
+            movie_genres = tmdb.genres('movie')
+            show_genres = tmdb.genres('show')
+            for g in movie_genres + show_genres:
+                gid = g.get('id')
+                name = g.get('name')
+                if gid and name:
+                    self.GENRE_MAP[gid] = name
+        except Exception as e:
+            try:
+                self.app.log(f"Error loading genre map: {e}")
+            except Exception:
+                pass
 
     DEFAULT_CSS = """
     HomeScreen #left-pane > Horizontal {
@@ -231,8 +318,8 @@ class HomeScreen(BaseScreen):
             except Exception:
                 pass
 
-        table = self.query_one("#results-table", DataTable)
-        table.add_columns("Tytuł", "Rok", "Typ")
+        self.prepare_media_table()
+        self.load_genre_map()
         
         inp = self.query_one("#search-input", Input)
         inp.display = False
@@ -490,7 +577,10 @@ class HomeScreen(BaseScreen):
     def prepare_media_table(self):
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Tytuł", "Gatunek", "Rok", "Typ")
+        table.add_column("Tytuł", key="title")
+        table.add_column("Gatunek", key="genre", width=17)
+        table.add_column("Rok", key="year", width=5)
+        table.add_column("Typ", key="type", width=7)
 
     def update_table_rows(self) -> None:
         table = self.query_one("#results-table", DataTable)
@@ -524,8 +614,7 @@ class HomeScreen(BaseScreen):
                 
             title = self.get_display_title(i, item)
             
-            vtag = item.getVideoInfoTag()
-            genre = vtag.getGenre() or "Nieznany"
+            genre = self.get_genre_string(item)
                 
             table.add_row(
                 title, 
@@ -728,9 +817,7 @@ class HomeScreen(BaseScreen):
                 itype = "Odcinek"
                 
             title = self.get_display_title(idx, item)
-            
-            vtag = item.getVideoInfoTag()
-            genre = vtag.getGenre() or "Nieznany"
+            genre = self.get_genre_string(item)
                 
             table.add_row(
                 title, 
