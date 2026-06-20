@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Static
 
-from tui.helpers import get_truncated_plot, PosterRenderable
+from tui.helpers import get_truncated_plot, PosterRenderable, sanitize_title
 from lib.ff.settings import settings
 
 class MetaPanel(Vertical):
@@ -24,7 +24,7 @@ class MetaPanel(Vertical):
             return
 
         vtag = item.getVideoInfoTag()
-        title = item.title
+        title = sanitize_title(item.title)
         year = item.year or vtag.getYear() or "????"
         rating = f"{vtag.getRating():.1f}/10" if vtag.getRating() else "N/A"
         genre = vtag.getGenre() or "Nieznany"

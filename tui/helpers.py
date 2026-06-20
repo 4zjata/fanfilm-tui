@@ -257,3 +257,21 @@ def delete_local_progress(ref_str):
         pass
     finally:
         conn.close()
+
+def is_latin_only(s: str) -> bool:
+    for c in s:
+        code = ord(c)
+        if not (code <= 0x024F or 0x2000 <= code <= 0x206F or 0x2100 <= code <= 0x218F):
+            return False
+    return True
+
+def sanitize_title(title: str) -> str:
+    if not title:
+        return ""
+    if not is_latin_only(title):
+        try:
+            import anyascii
+            return anyascii.anyascii(title)
+        except Exception:
+            pass
+    return title

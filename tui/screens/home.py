@@ -7,7 +7,7 @@ from textual.widgets.option_list import Option
 from textual.binding import Binding
 
 from tui.screens.base import BaseScreen
-from tui.helpers import rate_source
+from tui.helpers import rate_source, sanitize_title
 
 class HomeScreen(BaseScreen):
     BINDINGS = [
@@ -411,6 +411,8 @@ class HomeScreen(BaseScreen):
             if item.ref.is_episode:
                 show_title = item.vtag.getTvShowTitle() or item.vtag.getEnglishTvShowTitle() or "Serial"
                 title = f"{show_title} - S{item.season:02d}E{item.episode:02d}"
+            
+            title = sanitize_title(title)
                 
             if self.current_menu_id == "menu-progress":
                 pct = self.progress_map.get(str(i), "0%")
@@ -452,7 +454,7 @@ class HomeScreen(BaseScreen):
                 
             itype = "Filmy" if media_type == "movie" else "Seriale"
             table.add_row(
-                genre.get('name', 'Nieznany'),
+                sanitize_title(genre.get('name', 'Nieznany')),
                 itype,
                 key=str(i)
             )
