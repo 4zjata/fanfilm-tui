@@ -1983,3 +1983,115 @@ def add_colon_reversed_titles(titles: List[str]) -> List[str]:
             if rev not in titles and rev not in tmp:
                 tmp.append(rev)
     return titles + tmp
+
+
+def detect_torrent_language(filename: str, title: str) -> tuple[str, str]:
+    """Detect language and audio type specifically for P2P torrent filenames and Stremio titles."""
+    title_lower = title.lower()
+    
+    # 1. Check for explicit flag emojis in Stremio's title / description
+    has_pl_flag = '🇵🇱' in title
+    
+    # Other flags indicating explicitly non-PL language
+    other_flags = [
+        '🇮🇹', '🇷🇺', '🇪🇸', '🇫🇷', '🇩🇪', '🇵🇹', '🇧🇷', '🇯🇵', '🇰🇷', '🇨🇳', 
+        '🇺🇦', '🇹🇷', '🇳🇱', '🇸🇪', '🇫🇮', '🇳🇴', '🇩🇰', '🇬🇷', '🇨🇿', '🇭🇺', 
+        '🇷🇴', '🇧🇬', '🇸🇰', '🇭🇷', '🇱🇹', '🇱🇻', '🇪🇪', '🇮🇪', '🇮🇸', '🇮🇳', '🇸a'
+    ]
+    has_other_flag = any(f in title for f in other_flags)
+    
+    if has_pl_flag:
+        # Polish flag found -> It's Polish! Parse the audio type
+        audio_type = _parse_torrent_audio_type(filename, title)
+        return 'pl', audio_type or 'Dubbing'
+        
+    if has_other_flag and not has_pl_flag:
+        # Non-Polish flag found without a Polish flag -> definitely not Polish
+        return 'en', ''
+
+    # 2. Check for explicit language/dubbing text in description lines
+    # (e.g. "Dubbing: Russian", "Audio: Italian", "Languages: Spanish", "Subtitles: German")
+    lines = [line.strip() for line in title_lower.split('\n')]
+    has_explicit_polish = False
+    has_explicit_other = False
+    
+    for line in lines:
+        if any(keyword in line for keyword in ['dubbing', 'dubbed', 'audio', 'language', 'napisy', 'sub']):
+            # If the line contains "polish" or similar PL tags
+            if any(pl_tag in line for pl_tag in ['polish', ' pol ', ' pl ', 'polski', 'plk']):
+                has_explicit_polish = True
+            
+            # Check if this line explicitly declares a non-Polish language
+            for lang in [
+                'russian', 'italian', 'spanish', 'french', 'german', 'portuguese', 
+                'japanese', 'korean', 'chinese', 'ukrainian', 'turkish', 'dutch', 
+                'swedish', 'finnish', 'norwegian', 'danish', 'greek', 'czech', 
+                'slovak', 'croatian', 'bulgarian', 'romanian'
+            ]:
+                if lang in line:
+                    has_explicit_other = True
+                    
+    if has_explicit_polish:
+        audio_type = _parse_torrent_audio_type(filename, title)
+        return 'pl', audio_type or 'Dubbing'
+        
+    if has_explicit_other and not has_explicit_polish:
+        return 'en', ''
+
+    # 3. Fallback to parsing filename
+    filename_lower = filename.lower()
+    text = re.sub(r"[\][._-]", " ", filename_lower)
+    text = f" {text} "
+    
+    # Check for explicit Polish audio markers (Lektor, Dubbing, pl dub)
+    # Ensure they are not prefixed/suffixed to represent another language
+    is_pl_audio = False
+    audio_type = ''
+    
+    if 'lektor' in text:
+        is_pl_audio = True
+        audio_type = 'Lektor'
+    elif any(x in text for x in ['pldub', 'pl dub', 'pl-dub']) or ('dub' in text and not any(x in text for x in ['rus', 'ita', 'ger', 'fre', 'spa', 'fra', 'esp'])):
+        is_pl_audio = True
+        audio_type = 'Dubbing'
+        
+    # Check for Polish subtitle markers
+    is_pl_subs = False
+    if any(x in text for x in ['plsub', 'napisy pl', 'napisy', 'nap pl', 'sub pl', 'pl sub', 'pl-sub']):
+        is_pl_subs = True
+        audio_type = 'Napisy'
+        
+    # Check for general Polish country/language code tag
+    is_pl_tag = any(f" {x} " in text for x in ['pl', 'pol', 'polish', 'plk'])
+    
+    if is_pl_audio or is_pl_subs or is_pl_tag:
+        return 'pl', audio_type
+        
+    # Polish diacritics check
+    if re.search(r"[ąęółśżźćń]", filename_lower):
+        return 'pl', ''
+
+    return 'en', ''
+
+
+def _parse_torrent_audio_type(filename: str, title: str) -> str:
+    filename_lower = filename.lower()
+    text = re.sub(r"[\][._-]", " ", filename_lower)
+    text = f" {text} "
+    
+    if 'lektor' in text:
+        return 'Lektor'
+    if any(x in text for x in ['dubbing', 'pldub', 'pl dub', ' dub ']):
+        return 'Dubbing'
+    if any(x in text for x in ['plsub', 'napisy pl', 'napisy', 'nap pl', 'sub pl', 'pl sub']):
+        return 'Napisy'
+        
+    title_lower = title.lower()
+    if 'lektor' in title_lower:
+        return 'Lektor'
+    if 'dubbing' in title_lower or 'dubbed' in title_lower:
+        return 'Dubbing'
+    if 'napisy' in title_lower or 'subtitles' in title_lower or 'plsub' in title_lower:
+        return 'Napisy'
+        
+    return ''

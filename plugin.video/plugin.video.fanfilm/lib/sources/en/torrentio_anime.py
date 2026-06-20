@@ -280,15 +280,9 @@ class source:
                             quality = '720p'
                         break
 
-                # Detect language and audio type using FanFilm's built-in get_lang_by_type resolver
-                lang_code, audio_type = source_utils.get_lang_by_type(filename)
-                if not lang_code:
-                    lang_code, audio_type = source_utils.get_lang_by_type(title)
-                
-                is_pl = (lang_code == 'pl' or lang_code == 'multi')
-                if '🇵🇱' in title:
-                    is_pl = True
-                    lang_code = 'pl'
+                # Detect language and audio type using the new detect_torrent_language helper
+                lang_code, audio_type = source_utils.detect_torrent_language(filename, title)
+                is_pl = (lang_code == 'pl')
 
                 info_label = f"👤 {seeds} | 💾 {size_str}"
                 if audio_type:

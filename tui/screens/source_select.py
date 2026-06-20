@@ -74,6 +74,7 @@ class SourceSelectScreen(Screen):
     }
     #detail-filename {
         color: $text;
+        width: 100%;
     }
     #sources-table {
         height: 100%;
