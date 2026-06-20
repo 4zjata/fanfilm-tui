@@ -11,13 +11,17 @@ from tui.helpers import rate_source
 
 class HomeScreen(BaseScreen):
     BINDINGS = [
-        ("escape", "app.pop_screen", "Powrót"),
+        ("escape", "escape", "Powrót"),
         ("f", "filter_movies", "Filmy"),
         ("s", "filter_shows", "Seriale"),
         ("a", "filter_all", "Wszystko"),
         ("delete", "delete_progress", "Usuń"),
         Binding("d", "delete_progress", "Usuń", show=False),
     ]
+
+    def action_escape(self) -> None:
+        if len(self.app.screen_stack) > 1:
+            self.app.pop_screen()
 
     DEFAULT_CSS = """
     HomeScreen #left-pane > Horizontal {
