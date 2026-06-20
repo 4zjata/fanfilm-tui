@@ -17,6 +17,7 @@ class SeasonScreen(BaseScreen):
         yield DataTable(id="season-table", cursor_type="row")
 
     def on_mount(self) -> None:
+        super().on_mount()
         self.query_one("#meta-panel").update_meta(self.tvshow)
         self.load_seasons()
 

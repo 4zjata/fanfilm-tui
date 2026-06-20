@@ -130,6 +130,10 @@ class FanFilmApp(App):
             settings.set("tui.discord_show_time", "true")
         if not settings.getString("tui.discord_show_images"):
             settings.set("tui.discord_show_images", "false")
+        if not settings.getString("tui.menu_sidebar_width"):
+            settings.set("tui.menu_sidebar_width", "28")
+        if not settings.getString("tui.right_pane_width"):
+            settings.set("tui.right_pane_width", "40")
 
         # Torrentio & Streaming defaults
         if not settings.getString("torrentio.enabled"):

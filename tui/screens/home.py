@@ -6,6 +6,7 @@ from textual.widgets import Input, DataTable, OptionList
 from textual.widgets.option_list import Option
 from textual.binding import Binding
 
+from lib.ff.settings import settings
 from tui.screens.base import BaseScreen
 from tui.helpers import rate_source, sanitize_title
 
@@ -17,11 +18,73 @@ class HomeScreen(BaseScreen):
         ("a", "filter_all", "Wszystko"),
         ("delete", "delete_progress", "Usuń"),
         Binding("d", "delete_progress", "Usuń", show=False),
+        Binding("[", "resize_menu_decrease", "Menu -"),
+        Binding("]", "resize_menu_increase", "Menu +"),
+        Binding("{", "resize_desc_decrease", "Opis -"),
+        Binding("}", "resize_desc_increase", "Opis +"),
     ]
 
     def action_escape(self) -> None:
         if len(self.app.screen_stack) > 2:
             self.app.pop_screen()
+
+    def action_resize_menu_decrease(self) -> None:
+        sidebar = self.query_one("#home-sidebar")
+        current_w = 28
+        val = settings.getString("tui.menu_sidebar_width")
+        if val:
+            try:
+                current_w = int(val)
+            except ValueError:
+                pass
+        new_w = max(15, current_w - 1)
+        sidebar.styles.width = new_w
+        settings.set("tui.menu_sidebar_width", str(new_w))
+
+    def action_resize_menu_increase(self) -> None:
+        sidebar = self.query_one("#home-sidebar")
+        current_w = 28
+        val = settings.getString("tui.menu_sidebar_width")
+        if val:
+            try:
+                current_w = int(val)
+            except ValueError:
+                pass
+        new_w = min(50, current_w + 1)
+        sidebar.styles.width = new_w
+        settings.set("tui.menu_sidebar_width", str(new_w))
+
+    def action_resize_desc_decrease(self) -> None:
+        val = settings.getString("tui.right_pane_width")
+        current_w = 40
+        if val:
+            try:
+                current_w = int(val)
+            except ValueError:
+                pass
+        new_w = max(15, current_w - 2)
+        try:
+            self.query_one("#right-pane").styles.width = f"{new_w}%"
+            self.query_one("#left-pane").styles.width = f"{100 - new_w}%"
+        except Exception:
+            pass
+        settings.set("tui.right_pane_width", str(new_w))
+
+    def action_resize_desc_increase(self) -> None:
+        val = settings.getString("tui.right_pane_width")
+        current_w = 40
+        if val:
+            try:
+                current_w = int(val)
+            except ValueError:
+                pass
+        new_w = min(60, current_w + 2)
+        try:
+            self.query_one("#right-pane").styles.width = f"{new_w}%"
+            self.query_one("#left-pane").styles.width = f"{100 - new_w}%"
+        except Exception:
+            pass
+        settings.set("tui.right_pane_width", str(new_w))
 
     DEFAULT_CSS = """
     HomeScreen #left-pane > Horizontal {
@@ -118,6 +181,16 @@ class HomeScreen(BaseScreen):
                 yield DataTable(id="results-table", cursor_type="row")
 
     def on_mount(self) -> None:
+        super().on_mount()
+        
+        # Restore menu sidebar width from settings
+        menu_w = settings.getString("tui.menu_sidebar_width")
+        if menu_w:
+            try:
+                self.query_one("#home-sidebar").styles.width = int(menu_w)
+            except Exception:
+                pass
+
         table = self.query_one("#results-table", DataTable)
         table.add_columns("Tytuł", "Rok", "Typ")
         
