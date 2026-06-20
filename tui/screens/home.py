@@ -40,6 +40,7 @@ class HomeScreen(BaseScreen):
         new_w = max(15, current_w - 1)
         sidebar.styles.width = new_w
         settings.set("tui.menu_sidebar_width", str(new_w))
+        self.call_after_refresh(self.recalculate_column_widths)
 
     def action_resize_menu_increase(self) -> None:
         sidebar = self.query_one("#home-sidebar")
@@ -53,6 +54,7 @@ class HomeScreen(BaseScreen):
         new_w = min(50, current_w + 1)
         sidebar.styles.width = new_w
         settings.set("tui.menu_sidebar_width", str(new_w))
+        self.call_after_refresh(self.recalculate_column_widths)
 
     def action_resize_desc_decrease(self) -> None:
         val = settings.getString("tui.right_pane_width")
@@ -69,6 +71,7 @@ class HomeScreen(BaseScreen):
         except Exception:
             pass
         settings.set("tui.right_pane_width", str(new_w))
+        self.call_after_refresh(self.recalculate_column_widths)
 
     def action_resize_desc_increase(self) -> None:
         val = settings.getString("tui.right_pane_width")
@@ -85,6 +88,43 @@ class HomeScreen(BaseScreen):
         except Exception:
             pass
         settings.set("tui.right_pane_width", str(new_w))
+        self.call_after_refresh(self.recalculate_column_widths)
+
+    def recalculate_column_widths(self) -> None:
+        try:
+            table = self.query_one("#results-table", DataTable)
+            if not table or not table.columns:
+                return
+            
+            # Only adjust if we are in media results mode (not genres)
+            if self.current_menu_id == "menu-genres":
+                return
+                
+            # Get the first column (Tytuł)
+            title_key = list(table.columns.keys())[0]
+            col = table.columns[title_key]
+            
+            # Get other columns render widths
+            other_w = 0
+            for k, c in list(table.columns.items())[1:]:
+                other_w += c.get_render_width(table)
+                
+            # Scrollbar, cell padding, and borders margin
+            margin = 5
+            
+            # Table container width
+            container_w = table.container_size.width
+            if container_w > 0:
+                target_w = max(25, container_w - other_w - margin)
+                col.auto_width = False
+                col.width = target_w
+                table._require_update_dimensions = True
+                table.refresh()
+        except Exception:
+            pass
+
+    def on_resize(self) -> None:
+        self.recalculate_column_widths()
 
     DEFAULT_CSS = """
     HomeScreen #left-pane > Horizontal {
@@ -450,7 +490,7 @@ class HomeScreen(BaseScreen):
     def prepare_media_table(self):
         table = self.query_one("#results-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Tytuł", "Rok", "Typ")
+        table.add_columns("Tytuł", "Gatunek", "Rok", "Typ")
 
     def update_table_rows(self) -> None:
         table = self.query_one("#results-table", DataTable)
@@ -460,6 +500,7 @@ class HomeScreen(BaseScreen):
         if self.current_menu_id.startswith("genre-"):
             table.add_row(
                 "⬅️ Powrót do listy gatunków",
+                "—",
                 "—",
                 "—",
                 key="0"
@@ -482,9 +523,13 @@ class HomeScreen(BaseScreen):
                 itype = "Odcinek"
                 
             title = self.get_display_title(i, item)
+            
+            vtag = item.getVideoInfoTag()
+            genre = vtag.getGenre() or "Nieznany"
                 
             table.add_row(
                 title, 
+                genre,
                 str(item.year or '????'), 
                 itype, 
                 key=str(i)
@@ -494,6 +539,8 @@ class HomeScreen(BaseScreen):
         inp.disabled = False
         if self.current_menu_id != "menu-search" and table.row_count > 0:
             table.focus()
+            
+        self.recalculate_column_widths()
 
     def show_results(self, results, menu_id, progress_map=None, page=1):
         if self.current_menu_id != menu_id:
@@ -681,15 +728,20 @@ class HomeScreen(BaseScreen):
                 itype = "Odcinek"
                 
             title = self.get_display_title(idx, item)
+            
+            vtag = item.getVideoInfoTag()
+            genre = vtag.getGenre() or "Nieznany"
                 
             table.add_row(
                 title, 
+                genre,
                 str(item.year or '????'), 
                 itype, 
                 key=str(idx)
             )
             
         self.is_loading_more = False
+        self.recalculate_column_widths()
         self.fetch_romanized_titles(self.results, menu_id)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
