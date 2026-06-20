@@ -174,6 +174,11 @@ class DiscordRPCManager:
                                 "state": state_str[:128] if state_str else None,
                                 "details": details_str[:128] if details_str else None,
                             }
+                            try:
+                                from pypresence.types import ActivityType
+                                kwargs["activity_type"] = ActivityType.WATCHING
+                            except Exception:
+                                kwargs["activity_type"] = 3
                             if show_images:
                                 poster_url = current_item.get("poster_url")
                                 if poster_url and (poster_url.startswith("http://") or poster_url.startswith("https://")):
