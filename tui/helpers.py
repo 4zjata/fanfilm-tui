@@ -141,13 +141,28 @@ def play_in_mpv(resolved_url, title="", start_time=0):
         if start_time > 10:
             cmd.append(f"--start={int(start_time)}")
 
+        subtitles = []
         for k, v in headers.items():
             if k.lower() == 'user-agent':
                 cmd.append(f"--user-agent={v}")
             elif k.lower() == 'referer':
                 cmd.append(f"--referrer={v}")
+            elif k.lower() == 'subtitles':
+                try:
+                    import json
+                    subs_list = json.loads(v)
+                    if isinstance(subs_list, list):
+                        subtitles = subs_list
+                except Exception:
+                    pass
             else:
                 cmd.append(f"--http-header-fields={k}: {v}")
+
+        for sub in subtitles:
+            sub_url = sub.get('url')
+            if sub_url:
+                cmd.append(f"--sub-file={sub_url}")
+
         if title:
             cmd.append(f"--force-media-title={title}")
             

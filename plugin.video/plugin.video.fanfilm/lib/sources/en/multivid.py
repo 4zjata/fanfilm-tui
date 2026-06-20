@@ -137,7 +137,14 @@ class source:
                 return
 
             quality = probe_m3u8_quality(playlist, _VIDLINK_HEADERS) or 'SD'
-            final = f'{playlist}{append_headers(_VIDLINK_HEADERS)}'
+            
+            headers = dict(_VIDLINK_HEADERS)
+            captions = (payload.get('stream') or {}).get('captions') or []
+            if captions:
+                import json
+                headers['subtitles'] = json.dumps(captions)
+
+            final = f'{playlist}{append_headers(headers)}'
             if '.m3u8' in playlist or '.mpd' in playlist:
                 final = f'isa+{final}'
 

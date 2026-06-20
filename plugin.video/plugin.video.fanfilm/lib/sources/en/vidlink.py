@@ -308,6 +308,14 @@ class source:
 
             cookie_param = f"cf_clearance={cf_cookie}" if cf_cookie else None
             resolved_url = build_isa_url(playlist_url, referer=stream_referer, origin=stream_origin, ua=ua, cookie=cookie_param)
+
+            captions = stream_data.get('captions', [])
+            if captions:
+                import json
+                from urllib.parse import quote_plus
+                serialized = quote_plus(json.dumps(captions))
+                resolved_url = f"{resolved_url}&subtitles={serialized}"
+
             write_log(f"[VIDLINK] resolve() returns resolved_url={resolved_url!r}\n")
             fflog(f'vidlink resolved HLS: {playlist_url}')
             return resolved_url
