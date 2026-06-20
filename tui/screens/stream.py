@@ -290,26 +290,29 @@ class StreamScreen(Screen):
                                                 start_timestamp = now - playback_state["time"]
                                                 end_timestamp = start_timestamp + playback_state["duration"]
                                                 
-                                                title_text = f"{ffitem.title} ({ffitem.year or '????'})"
+                                                title_text = ffitem.title
                                                 if ffitem.ref.is_episode:
                                                     title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
                                                 
+                                                poster_url = ffitem.getArt("poster") if hasattr(ffitem, 'getArt') else None
                                                 self.app.discord_rpc.set_status(
                                                     state="Ogląda",
                                                     details=title_text,
                                                     is_watching=True,
                                                     start_time=start_timestamp,
-                                                    end_time=end_timestamp
+                                                    end_time=end_timestamp,
+                                                    poster_url=poster_url
                                                 )
                                 except Exception:
                                     pass
                                 time.sleep(2)
 
                         if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
-                            title_text = f"{ffitem.title} ({ffitem.year or '????'})"
+                            title_text = ffitem.title
                             if ffitem.ref.is_episode:
                                 title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
-                            self.app.discord_rpc.set_status("Ogląda", title_text, is_watching=True)
+                            poster_url = ffitem.getArt("poster") if hasattr(ffitem, 'getArt') else None
+                            self.app.discord_rpc.set_status("Ogląda", title_text, is_watching=True, poster_url=poster_url)
 
                         monitor_thread = Thread(target=monitor, daemon=True)
                         monitor_thread.start()

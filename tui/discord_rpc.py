@@ -43,7 +43,7 @@ class DiscordRPCManager:
         if enabled and (not old_enabled or client_id != old_client_id):
             self._queue.put({"action": "connect"})
 
-    def set_status(self, state, details, is_watching=False, start_time=None, end_time=None):
+    def set_status(self, state, details, is_watching=False, start_time=None, end_time=None, poster_url=None):
         if not self.enabled:
             return
             
@@ -85,6 +85,7 @@ class DiscordRPCManager:
             "is_watching": is_watching,
             "start_time": final_start,
             "end_time": final_end,
+            "poster_url": poster_url,
             "timestamp": time.time()
         }
         self._last_payload = payload
@@ -174,8 +175,14 @@ class DiscordRPCManager:
                                 "details": details_str[:128] if details_str else None,
                             }
                             if show_images:
-                                kwargs["large_image"] = "icon"
-                                kwargs["large_text"] = "FanFilm TUI"
+                                poster_url = current_item.get("poster_url")
+                                if poster_url and (poster_url.startswith("http://") or poster_url.startswith("https://")):
+                                    kwargs["large_image"] = poster_url
+                                    kwargs["large_text"] = details_str[:128] if details_str else "Wideo"
+                                else:
+                                    kwargs["large_image"] = "icon"
+                                    kwargs["large_text"] = details_str[:128] if details_str else "FanFilm"
+
                                 if current_item.get("is_watching"):
                                     kwargs["small_image"] = "play"
                                     kwargs["small_text"] = "Odtwarzanie"
