@@ -223,7 +223,7 @@ class FanFilmApp(App):
         self.discord_rpc = DiscordRPCManager(client_id=rpc_client_id, enabled=rpc_enabled)
         self.discord_rpc.start()
         
-        self.switch_screen(HomeScreen())
+        self.push_screen(HomeScreen())
 
     def on_unmount(self):
         if hasattr(self, 'cf_server') and self.cf_server:
@@ -232,7 +232,7 @@ class FanFilmApp(App):
             self.discord_rpc.shutdown()
 
     def action_goto_search(self):
-        while len(self.screen_stack) > 1:
+        while len(self.screen_stack) > 2:
             self.pop_screen()
             
         if isinstance(self.screen, HomeScreen):

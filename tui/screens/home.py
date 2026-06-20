@@ -20,7 +20,7 @@ class HomeScreen(BaseScreen):
     ]
 
     def action_escape(self) -> None:
-        if len(self.app.screen_stack) > 1:
+        if len(self.app.screen_stack) > 2:
             self.app.pop_screen()
 
     DEFAULT_CSS = """
@@ -29,9 +29,12 @@ class HomeScreen(BaseScreen):
     }
     #home-sidebar {
         width: 28;
-        border-right: solid $primary;
+        border-right: solid $primary-darken-2;
         height: 100%;
         padding: 0 1 0 0;
+    }
+    #home-sidebar:has(#sidebar-list:focus) {
+        border-right: solid $accent;
     }
     #home-main {
         width: 1fr;
@@ -49,10 +52,27 @@ class HomeScreen(BaseScreen):
     #sidebar-list > .option-list--separator {
         color: $primary-darken-2;
     }
-    #sidebar-list > .option-list--option-highlighted {
+    /* Menu highlight when active/focused */
+    #sidebar-list:focus > .option-list--option-highlighted {
         background: $accent;
         color: $text;
+        text-style: bold;
+    }
+    /* Menu highlight when inactive/unfocused */
+    #sidebar-list > .option-list--option-highlighted {
+        background: $surface;
+        color: $text-muted;
         text-style: none;
+    }
+    /* Table row highlight when active/focused */
+    #results-table:focus > .datatable--cursor {
+        background: $accent;
+        color: $text;
+    }
+    /* Table row highlight when inactive/unfocused */
+    #results-table > .datatable--cursor {
+        background: $surface;
+        color: $text-muted;
     }
     """
 
