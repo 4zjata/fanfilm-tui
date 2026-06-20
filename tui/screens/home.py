@@ -475,8 +475,53 @@ class HomeScreen(BaseScreen):
             movie_genres = list(tmdb.genres('movie'))
             show_genres = list(tmdb.genres('show'))
             
+            groups = [
+                {
+                    'name': 'Akcja / Przygoda',
+                    'movie_ids': [28, 12],
+                    'show_ids': [10759]
+                },
+                {
+                    'name': 'Sci-Fi / Fantasy',
+                    'movie_ids': [878, 14],
+                    'show_ids': [10765]
+                },
+                {
+                    'name': 'Wojna / Polityka',
+                    'movie_ids': [10752],
+                    'show_ids': [10768]
+                },
+                {
+                    'name': 'Dla dzieci / Familijny',
+                    'movie_ids': [10751],
+                    'show_ids': [10762, 10751]
+                },
+                {
+                    'name': 'Kryminał / Thriller',
+                    'movie_ids': [80, 53],
+                    'show_ids': [80]
+                }
+            ]
+            
+            grouped_movie_ids = set()
+            grouped_show_ids = set()
+            for group in groups:
+                grouped_movie_ids.update(group['movie_ids'])
+                grouped_show_ids.update(group['show_ids'])
+                
+            results = []
+            for group in groups:
+                results.append({
+                    'name': group['name'],
+                    'movie_id': group['movie_ids'],
+                    'show_id': group['show_ids']
+                })
+                
+            remaining_movie = [g for g in movie_genres if g.get('id') not in grouped_movie_ids]
+            remaining_show = [g for g in show_genres if g.get('id') not in grouped_show_ids]
+            
             merged = {}
-            for g in movie_genres:
+            for g in remaining_movie:
                 name = g.get('name')
                 if name:
                     key = name.lower().strip()
@@ -485,7 +530,7 @@ class HomeScreen(BaseScreen):
                         'movie_id': g.get('id'),
                         'show_id': None
                     }
-            for g in show_genres:
+            for g in remaining_show:
                 name = g.get('name')
                 if name:
                     key = name.lower().strip()
@@ -498,7 +543,7 @@ class HomeScreen(BaseScreen):
                             'show_id': g.get('id')
                         }
             
-            results = list(merged.values())
+            results.extend(merged.values())
             results.sort(key=lambda x: x['name'])
             
             self.app.call_from_thread(self.show_genres, results, "menu-genres")
@@ -531,15 +576,19 @@ class HomeScreen(BaseScreen):
             shows = []
             
             if movie_id:
-                m_ids = movie_id if isinstance(movie_id, list) else [movie_id]
-                for mid in m_ids:
-                    movies.extend(list(tmdb.discover('movie', with_genres=str(mid), page=page))[:15])
+                if isinstance(movie_id, list):
+                    genre_query = "|".join(str(x) for x in movie_id)
+                else:
+                    genre_query = str(movie_id)
+                movies.extend(list(tmdb.discover('movie', with_genres=genre_query, page=page))[:30])
                     
             if show_id:
-                s_ids = show_id if isinstance(show_id, list) else [show_id]
-                for sid in s_ids:
-                    shows.extend(list(tmdb.discover('show', with_genres=str(sid), page=page))[:15])
-                    
+                if isinstance(show_id, list):
+                    genre_query = "|".join(str(x) for x in show_id)
+                else:
+                    genre_query = str(show_id)
+                shows.extend(list(tmdb.discover('show', with_genres=genre_query, page=page))[:30])
+                
             results = []
             for m, s in zip(movies, shows):
                 results.append(m)
@@ -852,15 +901,13 @@ class HomeScreen(BaseScreen):
                 shows = []
                 
                 if movie_ids_str and movie_ids_str != "None":
-                    m_ids = [int(x) for x in movie_ids_str.split(",") if x.replace("-", "").isdigit()]
-                    for mid in m_ids:
-                        movies.extend(list(tmdb.discover('movie', with_genres=str(mid), page=page))[:15])
+                    genre_query = movie_ids_str.replace(",", "|")
+                    movies.extend(list(tmdb.discover('movie', with_genres=genre_query, page=page))[:30])
                         
                 if show_ids_str and show_ids_str != "None":
-                    s_ids = [int(x) for x in show_ids_str.split(",") if x.replace("-", "").isdigit()]
-                    for sid in s_ids:
-                        shows.extend(list(tmdb.discover('show', with_genres=str(sid), page=page))[:15])
-                        
+                    genre_query = show_ids_str.replace(",", "|")
+                    shows.extend(list(tmdb.discover('show', with_genres=genre_query, page=page))[:30])
+                
                 results = []
                 for m, s in zip(movies, shows):
                     results.append(m)
