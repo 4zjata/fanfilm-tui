@@ -169,7 +169,7 @@ class SettingsScreen(Screen):
         if not discord_rpc_enabled: discord_rpc_enabled = "true"
 
         discord_client_id = settings.getString("tui.discord_client_id")
-        if not discord_client_id: discord_client_id = "1253130635292430336"
+        if not discord_client_id: discord_client_id = "1517667151920496821"
 
         rpc_menu = settings.getString("tui.discord_show_menu")
         if not rpc_menu: rpc_menu = "true"
@@ -249,7 +249,7 @@ class SettingsScreen(Screen):
             rpc_enabled = self.query_one("#rpc-select", Select).value
             rpc_client_id = self.query_one("#rpc-client-id", Input).value
             if not rpc_client_id or not rpc_client_id.strip():
-                rpc_client_id = "1253130635292430336"
+                rpc_client_id = "1517667151920496821"
             rpc_menu = self.query_one("#rpc-menu-select", Select).value
             rpc_scraping = self.query_one("#rpc-scraping-select", Select).value
             rpc_watching = self.query_one("#rpc-watching-select", Select).value

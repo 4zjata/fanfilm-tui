@@ -4,7 +4,7 @@ import sys
 from threading import Thread, Event
 
 class DiscordRPCManager:
-    def __init__(self, client_id="1253130635292430336", enabled=True):
+    def __init__(self, client_id="1517667151920496821", enabled=True):
         self.client_id = client_id
         self.enabled = enabled
         self._queue = queue.Queue()

@@ -119,7 +119,7 @@ class FanFilmApp(App):
         if not settings.getString("tui.discord_rpc_enabled"):
             settings.set("tui.discord_rpc_enabled", "true")
         if not settings.getString("tui.discord_client_id"):
-            settings.set("tui.discord_client_id", "1253130635292430336")
+            settings.set("tui.discord_client_id", "1517667151920496821")
         if not settings.getString("tui.discord_show_menu"):
             settings.set("tui.discord_show_menu", "true")
         if not settings.getString("tui.discord_show_scraping"):
@@ -217,7 +217,7 @@ class FanFilmApp(App):
         # Discord RPC
         from tui.discord_rpc import DiscordRPCManager
         rpc_enabled = settings.getString("tui.discord_rpc_enabled") != "false"
-        rpc_client_id = settings.getString("tui.discord_client_id") or "1253130635292430336"
+        rpc_client_id = settings.getString("tui.discord_client_id") or "1517667151920496821"
         self.discord_rpc = DiscordRPCManager(client_id=rpc_client_id, enabled=rpc_enabled)
         self.discord_rpc.start()
         
