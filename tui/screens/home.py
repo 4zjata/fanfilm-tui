@@ -33,7 +33,7 @@ class HomeScreen(BaseScreen):
         height: 100%;
         padding: 0 1 0 0;
     }
-    #home-sidebar:has(#sidebar-list:focus) {
+    #home-sidebar:focus-within {
         border-right: solid $accent;
     }
     #home-main {
