@@ -76,6 +76,8 @@ class source:
             base_url = settings.getString("torrentio.base_url")
             if not base_url:
                 base_url = "https://torrentio.strem.fun"
+            if base_url.endswith("/manifest.json"):
+                base_url = base_url[:-14]
             base_url = base_url.rstrip('/')
 
             config = settings.getString("torrentio.config")
