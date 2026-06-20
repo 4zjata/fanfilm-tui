@@ -248,6 +248,8 @@ class SettingsScreen(Screen):
             adv_val = self.query_one("#advanced-select", Select).value
             rpc_enabled = self.query_one("#rpc-select", Select).value
             rpc_client_id = self.query_one("#rpc-client-id", Input).value
+            if not rpc_client_id or not rpc_client_id.strip():
+                rpc_client_id = "1253130635292430336"
             rpc_menu = self.query_one("#rpc-menu-select", Select).value
             rpc_scraping = self.query_one("#rpc-scraping-select", Select).value
             rpc_watching = self.query_one("#rpc-watching-select", Select).value

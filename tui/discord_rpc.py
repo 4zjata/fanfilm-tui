@@ -12,6 +12,7 @@ class DiscordRPCManager:
         self._thread = None
         self._client = None
         self._connected = False
+        self._last_payload = None
 
     def start(self):
         if self._thread is not None:
@@ -77,14 +78,17 @@ class DiscordRPCManager:
             "end_time": final_end,
             "timestamp": time.time()
         }
+        self._last_payload = payload
         self._queue.put(payload)
 
     def clear_status(self):
+        self._last_payload = None
         if not self.enabled:
             return
         self._queue.put({"action": "clear"})
 
     def shutdown(self):
+        self._last_payload = None
         self._stop_event.set()
         self._queue.put({"action": "shutdown"})
         if self._thread:
@@ -126,8 +130,9 @@ class DiscordRPCManager:
                     if self._connected and self._client:
                         try:
                             self._client.clear()
-                        except Exception:
-                            self._connected = False
+                        except Exception as e:
+                            print(f"[Discord RPC] Clear failed: {type(e).__name__} - {e}", file=sys.stderr)
+                            self._disconnect_client()
                 elif action == "update" and self.enabled:
                     if self._connected and self._client:
                         # Only apply the newest update in queue to prevent backlog lag
@@ -164,9 +169,10 @@ class DiscordRPCManager:
                                 kwargs["end"] = int(current_item["end_time"])
 
                             self._client.update(**kwargs)
-                        except Exception:
-                            # If update fails, assume disconnected
-                            self._connected = False
+                        except Exception as e:
+                            # If update fails, assume disconnected and clean up
+                            print(f"[Discord RPC] Update failed: {type(e).__name__} - {e}", file=sys.stderr)
+                            self._disconnect_client()
                 
                 self._queue.task_done()
 
@@ -183,18 +189,26 @@ class DiscordRPCManager:
             return
         try:
             from pypresence import Presence
+            print(f"[Discord RPC] Connecting to Discord client with ID: {self.client_id}...", file=sys.stderr)
             self._client = Presence(self.client_id)
             self._client.connect()
             self._connected = True
-        except Exception:
+            print(f"[Discord RPC] Connected successfully!", file=sys.stderr)
+            # Resend last status on successful connection
+            if self._last_payload:
+                print(f"[Discord RPC] Resending last status on successful connect", file=sys.stderr)
+                self._queue.put(self._last_payload)
+        except Exception as e:
             self._connected = False
             self._client = None
+            print(f"[Discord RPC] Connection failed: {type(e).__name__} - {e}", file=sys.stderr)
 
     def _disconnect_client(self):
         if self._client:
             try:
+                print(f"[Discord RPC] Closing connection...", file=sys.stderr)
                 self._client.close()
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[Discord RPC] Exception during connection close: {e}", file=sys.stderr)
         self._client = None
         self._connected = False
