@@ -101,7 +101,7 @@ class HomeScreen(BaseScreen):
                 yield OptionList(
                     Option("\uf015 Start", id="menu-trending"),
                     None,
-                    Option("\U000f06bd Popularne", id="menu-popular"),
+                    Option("\ue232 Popularne", id="menu-popular"),
                     None,
                     Option("\uf005 Najlepsze", id="menu-top-rated"),
                     None,
