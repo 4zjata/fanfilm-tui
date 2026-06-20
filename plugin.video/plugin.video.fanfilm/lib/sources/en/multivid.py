@@ -126,8 +126,10 @@ class source:
             else:
                 api_url = f'{_VIDLINK_API}/movie/{encoded}?multiLang=0'
 
-            r = self.session.get(api_url, timeout=10)
+            r = self.session.get(api_url, headers=_VIDLINK_HEADERS, timeout=10)
             if not r.ok:
+                return
+            if not r.text.strip():
                 return
             payload = r.json() or {}
             playlist = ((payload.get('stream') or {}).get('playlist') or '').strip()

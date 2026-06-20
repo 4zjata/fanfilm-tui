@@ -247,9 +247,9 @@ class source:
             write_log(f"[VIDLINK] resolve() encrypted token={token!r}\n")
 
             if parts[0] == 'tv':
-                api_url = f'https://vidlink.pro/api/b/tv/{token}/{parts[2]}/{parts[3]}?multiLang=1'
+                api_url = f'https://vidlink.pro/api/b/tv/{token}/{parts[2]}/{parts[3]}?multiLang=0'
             else:
-                api_url = f'https://vidlink.pro/api/b/movie/{token}?multiLang=1'
+                api_url = f'https://vidlink.pro/api/b/movie/{token}?multiLang=0'
 
             from lib.ff.source_utils import setting_cookie
             from lib.ff.settings import settings
@@ -277,6 +277,10 @@ class source:
                 fflog(f'vidlink API returned status: {r.status_code}')
                 return None
 
+            if not r.text.strip():
+                write_log(f"[VIDLINK] resolve() api response is empty\n")
+                return None
+
             resp_json = r.json()
             stream_data = resp_json.get('stream', {})
             playlist_url = stream_data.get('playlist', '')
@@ -299,8 +303,8 @@ class source:
                 except Exception as e:
                     write_log(f"[VIDLINK] resolve() extra headers parsing exception: {e!r}\n")
 
-            stream_referer = extra_headers.get('referer') or extra_headers.get('Referer') or 'https://megacloud.live/'
-            stream_origin = extra_headers.get('origin') or extra_headers.get('Origin') or 'https://megacloud.live'
+            stream_referer = 'https://vidlink.pro/'
+            stream_origin = 'https://vidlink.pro'
 
             cookie_param = f"cf_clearance={cf_cookie}" if cf_cookie else None
             resolved_url = build_isa_url(playlist_url, referer=stream_referer, origin=stream_origin, ua=ua, cookie=cookie_param)
