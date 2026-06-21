@@ -200,7 +200,7 @@ class DiscordRPCManager:
                             if current_item.get("end_time"):
                                 kwargs["end"] = int(current_item["end_time"])
 
-                            self._log(f"[Discord RPC] Updating status: state={kwargs.get('state')!r}, details={kwargs.get('details')!r}, images={show_images}")
+                            self._log(f"[Discord RPC] Updating status: {kwargs}")
                             self._client.update(**kwargs)
                             self._log(f"[Discord RPC] Status updated successfully!")
                         except Exception as e:

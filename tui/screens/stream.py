@@ -294,7 +294,9 @@ class StreamScreen(Screen):
                                                 if ffitem.ref.is_episode:
                                                     title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
                                                 
-                                                poster_url = ffitem.getArt("poster") if hasattr(ffitem, 'getArt') else None
+                                                poster_url = None
+                                                if hasattr(ffitem, 'getArt'):
+                                                    poster_url = ffitem.getArt("poster") or ffitem.getArt("tvshow.poster") or ffitem.getArt("thumb") or ffitem.getArt("landscape")
                                                 self.app.discord_rpc.set_status(
                                                     state="Ogląda",
                                                     details=title_text,
@@ -311,7 +313,9 @@ class StreamScreen(Screen):
                             title_text = ffitem.title
                             if ffitem.ref.is_episode:
                                 title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
-                            poster_url = ffitem.getArt("poster") if hasattr(ffitem, 'getArt') else None
+                            poster_url = None
+                            if hasattr(ffitem, 'getArt'):
+                                poster_url = ffitem.getArt("poster") or ffitem.getArt("tvshow.poster") or ffitem.getArt("thumb") or ffitem.getArt("landscape")
                             self.app.discord_rpc.set_status("Ogląda", title_text, is_watching=True, poster_url=poster_url)
 
                         monitor_thread = Thread(target=monitor, daemon=True)

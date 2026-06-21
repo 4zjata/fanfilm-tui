@@ -129,7 +129,7 @@ class FanFilmApp(App):
         if not settings.getString("tui.discord_show_time"):
             settings.set("tui.discord_show_time", "true")
         if not settings.getString("tui.discord_show_images"):
-            settings.set("tui.discord_show_images", "false")
+            settings.set("tui.discord_show_images", "true")
         if not settings.getString("tui.menu_sidebar_width"):
             settings.set("tui.menu_sidebar_width", "28")
         if not settings.getString("tui.right_pane_width"):

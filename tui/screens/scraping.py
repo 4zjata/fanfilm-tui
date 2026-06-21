@@ -30,7 +30,9 @@ class ScrapingScreen(Screen):
             title_text = self.item.title
             if self.item.ref.is_episode:
                 title_text += f" S{self.item.season:02d}E{self.item.episode:02d}"
-            poster_url = self.item.getArt("poster") if hasattr(self.item, 'getArt') else None
+            poster_url = None
+            if hasattr(self.item, 'getArt'):
+                poster_url = self.item.getArt("poster") or self.item.getArt("tvshow.poster") or self.item.getArt("thumb") or self.item.getArt("landscape")
             self.app.discord_rpc.set_status("Szuka źródeł", title_text, poster_url=poster_url)
 
     @work(thread=True)

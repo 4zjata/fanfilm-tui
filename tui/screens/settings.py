@@ -187,7 +187,7 @@ class SettingsScreen(Screen):
         if not rpc_time: rpc_time = "true"
 
         rpc_images = settings.getString("tui.discord_show_images")
-        if not rpc_images: rpc_images = "false"
+        if not rpc_images: rpc_images = "true"
         
         torrentio_url = settings.getString("torrentio.base_url")
         if not torrentio_url: torrentio_url = "https://torrentio.strem.fun"
