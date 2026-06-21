@@ -290,16 +290,21 @@ class StreamScreen(Screen):
                                                 start_timestamp = now - playback_state["time"]
                                                 end_timestamp = start_timestamp + playback_state["duration"]
                                                 
-                                                title_text = ffitem.title
                                                 if ffitem.ref.is_episode:
-                                                    title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                                                    show_title = ffitem.vtag.getTvShowTitle() or ffitem.title
+                                                    ep_text = f"{ffitem.title} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                                                    state_val = ep_text
+                                                    details_val = show_title
+                                                else:
+                                                    state_val = "Ogląda"
+                                                    details_val = ffitem.title
                                                 
                                                 poster_url = None
                                                 if hasattr(ffitem, 'getArt'):
                                                     poster_url = ffitem.getArt("poster") or ffitem.getArt("tvshow.poster") or ffitem.getArt("thumb") or ffitem.getArt("landscape")
                                                 self.app.discord_rpc.set_status(
-                                                    state="Ogląda",
-                                                    details=title_text,
+                                                    state=state_val,
+                                                    details=details_val,
                                                     is_watching=True,
                                                     start_time=start_timestamp,
                                                     end_time=end_timestamp,
@@ -310,13 +315,18 @@ class StreamScreen(Screen):
                                 time.sleep(2)
 
                         if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
-                            title_text = ffitem.title
                             if ffitem.ref.is_episode:
-                                title_text = f"{title_text} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                                show_title = ffitem.vtag.getTvShowTitle() or ffitem.title
+                                ep_text = f"{ffitem.title} - S{ffitem.season:02d}E{ffitem.episode:02d}"
+                                state_val = ep_text
+                                details_val = show_title
+                            else:
+                                state_val = "Ogląda"
+                                details_val = ffitem.title
                             poster_url = None
                             if hasattr(ffitem, 'getArt'):
                                 poster_url = ffitem.getArt("poster") or ffitem.getArt("tvshow.poster") or ffitem.getArt("thumb") or ffitem.getArt("landscape")
-                            self.app.discord_rpc.set_status("Ogląda", title_text, is_watching=True, poster_url=poster_url)
+                            self.app.discord_rpc.set_status(state_val, details_val, is_watching=True, poster_url=poster_url)
 
                         monitor_thread = Thread(target=monitor, daemon=True)
                         monitor_thread.start()
