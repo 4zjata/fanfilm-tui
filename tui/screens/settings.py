@@ -16,6 +16,7 @@ class SettingsScreen(Screen):
                 Tab("Ogólne", id="tab-general"),
                 Tab("Ścieżki", id="tab-paths"),
                 Tab("Torrenty", id="tab-torrents"),
+                Tab("Discord", id="tab-discord"),
             )
             
             with VerticalScroll(id="settings-content"):
@@ -56,6 +57,7 @@ class SettingsScreen(Screen):
                     ]
                     yield Select(adv_options, id="advanced-select", allow_blank=False)
 
+                with Vertical(id="pane-discord"):
                     yield Label("Włącz Discord RPC (Status aktywności):")
                     rpc_options = [
                         ("Włączony", "true"),
@@ -154,6 +156,7 @@ class SettingsScreen(Screen):
         self.query_one("#pane-general").display = (active_tab_id == "tab-general")
         self.query_one("#pane-paths").display = (active_tab_id == "tab-paths")
         self.query_one("#pane-torrents").display = (active_tab_id == "tab-torrents")
+        self.query_one("#pane-discord").display = (active_tab_id == "tab-discord")
 
     def on_mount(self) -> None:
         lang_val = settings.getString("providers.lang")
