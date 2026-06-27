@@ -52,10 +52,12 @@ class MetaPanel(Vertical):
             import urllib.request
             import io
             from PIL import Image as PILImage
+            import ssl
             
+            context = ssl._create_unverified_context()
             # Download the image bytes
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as response:
+            with urllib.request.urlopen(req, context=context, timeout=5) as response:
                 img_data = response.read()
                 
             # Parse using PIL

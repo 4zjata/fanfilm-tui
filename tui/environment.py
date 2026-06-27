@@ -1,6 +1,13 @@
 import sys
 import os
+import ssl
 from pathlib import Path
+
+# Disable SSL verification globally to avoid certificate errors on macOS/local environments
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
 
 # --- Environment Setup ---
 os.environ['FF_FAKE'] = '1'

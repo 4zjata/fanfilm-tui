@@ -28,8 +28,10 @@ class PosterRenderable:
         
     def _load(self):
         try:
+            import ssl
+            context = ssl._create_unverified_context()
             req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, context=context) as response:
                 img = Image.open(response).convert("RGB")
             self._load_from_image(img)
         except Exception:
