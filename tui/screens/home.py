@@ -270,9 +270,11 @@ class HomeScreen(BaseScreen):
     }
     """
 
-    def __init__(self, start_search=False):
+    def __init__(self, start_search=False, start_menu_id: str = "menu-trending"):
         super().__init__()
-        self.current_menu_id = "menu-trending"
+        self.current_menu_id = start_menu_id
+        if start_search:
+            self.current_menu_id = "menu-search"
         self.results = []
         self.progress_map = {}
         self.start_search = start_search
@@ -301,6 +303,12 @@ class HomeScreen(BaseScreen):
                     Option("\uf252 W toku", id="menu-progress"),
                     None,
                     Option("\uf002 Szukaj", id="menu-search"),
+                    None,
+                    Option("\uf019 Pobierane", id="menu-downloads"),
+                    None,
+                    Option("\uf013 Ustawienia", id="menu-settings"),
+                    None,
+                    Option("\uf011 Wyjście", id="menu-quit"),
                     id="sidebar-list"
                 )
             with Vertical(id="home-main"):
@@ -324,25 +332,67 @@ class HomeScreen(BaseScreen):
         inp = self.query_one("#search-input", Input)
         inp.display = False
         
+        # Show or hide sidebar depending on setting
+        menu_type = settings.getString("tui.menu_type") or "sidebar"
+        sidebar = self.query_one("#home-sidebar")
+        if menu_type == "command_palette":
+            sidebar.display = False
+        else:
+            sidebar.display = True
+
         # Select initial option
         option_list = self.query_one("#sidebar-list", OptionList)
-        if self.start_search:
-            option_list.highlighted_index = 10  # Option index for Szukaj
-            self.current_menu_id = "menu-search"
-            inp.display = True
+        initial_idx = 0
+        for idx in range(option_list.option_count):
+            opt = option_list.get_option_at_index(idx)
+            if opt and opt.id == self.current_menu_id:
+                initial_idx = idx
+                break
+        
+        option_list.highlighted_index = initial_idx
+        self.select_menu_option(self.current_menu_id)
+
+        # Set initial focus
+        if self.current_menu_id == "menu-search":
             inp.focus()
-            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
-                self.app.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
         else:
-            option_list.highlighted_index = 0
-            self.current_menu_id = "menu-trending"
-            self.load_trending()
-            if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
-                self.app.discord_rpc.set_status("Przegląda menu", "Strona główna")
+            if menu_type == "command_palette":
+                self.query_one("#results-table").focus()
+            else:
+                option_list.focus()
+
+    def on_screen_resume(self) -> None:
+        super().on_screen_resume()
+        try:
+            menu_type = settings.getString("tui.menu_type") or "sidebar"
+            sidebar = self.query_one("#home-sidebar")
+            if menu_type == "command_palette":
+                sidebar.display = False
+                # Focus results-table if nothing else has active focus inside home-sidebar
+                if self.app.focused == sidebar or sidebar.has_focus:
+                    self.query_one("#results-table").focus()
+            else:
+                sidebar.display = True
+            self.call_after_refresh(self.recalculate_column_widths)
+        except Exception:
+            pass
 
     def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
-        opt_id = event.option.id
+        self.select_menu_option(event.option.id)
+
+    def select_menu_option(self, opt_id: str) -> None:
         self.current_menu_id = opt_id
+
+        # Update OptionList highlighted index to match, if possible, to keep state in sync
+        try:
+            option_list = self.query_one("#sidebar-list", OptionList)
+            for idx in range(option_list.option_count):
+                opt = option_list.get_option_at_index(idx)
+                if opt and opt.id == opt_id:
+                    option_list.highlighted_index = idx
+                    break
+        except Exception:
+            pass
 
         # Reset page states
         self.current_page = 1
@@ -364,6 +414,12 @@ class HomeScreen(BaseScreen):
             inp.focus()
             if hasattr(self.app, "discord_rpc") and self.app.discord_rpc:
                 self.app.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
+        elif opt_id == "menu-downloads":
+            self.app.action_goto_downloads()
+        elif opt_id == "menu-settings":
+            self.app.action_goto_settings()
+        elif opt_id == "menu-quit":
+            self.app.action_quit()
         else:
             inp.display = False
             if opt_id == "menu-trending":

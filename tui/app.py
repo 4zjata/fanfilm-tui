@@ -1,6 +1,6 @@
 import os
 from textual.app import App
-from textual.command import Provider, Hit, DiscoveryHit
+from textual.command import Provider, Hit, DiscoveryHit, CommandPalette
 
 from lib.ff.settings import settings
 from tui.screens.home import HomeScreen
@@ -8,28 +8,38 @@ from tui.screens.home import HomeScreen
 class FanFilmCommands(Provider):
     async def discover(self):
         commands = [
-            ("Szukaj (Search)", self.app.action_goto_search),
-            ("Ustawienia (Settings)", self.app.action_goto_settings),
-            ("Pobierane (Downloads)", self.app.action_goto_downloads),
-            ("Wyjście (Quit)", self.app.action_quit),
+            ("\uf015 Start\n", self.app.action_goto_trending),
+            ("\U000f0422 Popularne\n", self.app.action_goto_popular),
+            ("\uf005 Najlepsze\n", self.app.action_goto_top_rated),
+            ("\U000f040d Gatunki\n", self.app.action_goto_genres),
+            ("\uf252 W toku\n", self.app.action_goto_progress),
+            ("\uf002 Szukaj\n", self.app.action_goto_search),
+            ("\uf019 Pobierane\n", self.app.action_goto_downloads),
+            ("\uf013 Ustawienia\n", self.app.action_goto_settings),
+            ("\uf011 Wyjście\n", self.app.action_quit),
         ]
         for name, callback in commands:
-            yield DiscoveryHit(name, callback, help="Nawigacja")
+            yield DiscoveryHit(name, callback)
 
     async def search(self, query: str):
         matcher = self.matcher(query)
         
         commands = [
-            ("Szukaj (Search)", self.app.action_goto_search),
-            ("Ustawienia (Settings)", self.app.action_goto_settings),
-            ("Pobierane (Downloads)", self.app.action_goto_downloads),
-            ("Wyjście (Quit)", self.app.action_quit),
+            ("\uf015 Start\n", self.app.action_goto_trending),
+            ("\U000f0422 Popularne\n", self.app.action_goto_popular),
+            ("\uf005 Najlepsze\n", self.app.action_goto_top_rated),
+            ("\U000f040d Gatunki\n", self.app.action_goto_genres),
+            ("\uf252 W toku\n", self.app.action_goto_progress),
+            ("\uf002 Szukaj\n", self.app.action_goto_search),
+            ("\uf019 Pobierane\n", self.app.action_goto_downloads),
+            ("\uf013 Ustawienia\n", self.app.action_goto_settings),
+            ("\uf011 Wyjście\n", self.app.action_quit),
         ]
         
         for name, callback in commands:
             score = matcher.match(name)
             if score > 0:
-                yield Hit(score, matcher.highlight(name), callback, help="Nawigacja")
+                yield Hit(score, matcher.highlight(name), callback)
 
 class FanFilmApp(App):
     CSS = """
@@ -89,19 +99,46 @@ class FanFilmApp(App):
     }
     
     CommandPalette {
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.65);
     }
     CommandPalette.-ready > Vertical {
         visibility: visible;
         width: 60%;
-        height: auto;
-        max-height: 15;
-        border: double $accent;
+        height: 21;
+        border: solid $accent;
         background: $panel;
         margin-top: 3;
+        overflow: hidden;
+    }
+    CommandPalette #--input {
+        border: none;
+        border-bottom: solid $accent;
+        background: transparent;
+        height: 3;
+        margin: 0;
+        padding: 0 1;
+    }
+    CommandPalette #--input Label {
+        display: none;
     }
     CommandPalette #--results {
         overlay: none;
+        height: 1fr;
+    }
+    CommandPalette CommandList {
+        height: 1fr;
+        background: transparent;
+    }
+    CommandPalette CommandList > .option-list--option-highlighted {
+        background: $accent;
+        color: $text;
+        text-style: bold;
+    }
+    CommandPalette LoadingIndicator {
+        display: none;
+    }
+    CommandPalette LoadingIndicator.--visible {
+        display: block;
     }
     """
 
@@ -134,6 +171,8 @@ class FanFilmApp(App):
             settings.set("tui.menu_sidebar_width", "28")
         if not settings.getString("tui.right_pane_width"):
             settings.set("tui.right_pane_width", "40")
+        if not settings.getString("tui.menu_type"):
+            settings.set("tui.menu_type", "sidebar")
 
         # Torrentio & Streaming defaults
         if not settings.getString("torrentio.enabled"):
@@ -235,17 +274,56 @@ class FanFilmApp(App):
         if hasattr(self, 'discord_rpc') and self.discord_rpc:
             self.discord_rpc.shutdown()
 
+    def action_command_palette(self) -> None:
+        if self.use_command_palette and not CommandPalette.is_open(self):
+            self.push_screen(CommandPalette(id="--command-palette", placeholder=""))
+
+    def action_goto_trending(self):
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if isinstance(self.screen, HomeScreen):
+            self.screen.select_menu_option("menu-trending")
+        else:
+            self.switch_screen(HomeScreen(start_menu_id="menu-trending"))
+
+    def action_goto_popular(self):
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if isinstance(self.screen, HomeScreen):
+            self.screen.select_menu_option("menu-popular")
+        else:
+            self.switch_screen(HomeScreen(start_menu_id="menu-popular"))
+
+    def action_goto_top_rated(self):
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if isinstance(self.screen, HomeScreen):
+            self.screen.select_menu_option("menu-top-rated")
+        else:
+            self.switch_screen(HomeScreen(start_menu_id="menu-top-rated"))
+
+    def action_goto_genres(self):
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if isinstance(self.screen, HomeScreen):
+            self.screen.select_menu_option("menu-genres")
+        else:
+            self.switch_screen(HomeScreen(start_menu_id="menu-genres"))
+
+    def action_goto_progress(self):
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if isinstance(self.screen, HomeScreen):
+            self.screen.select_menu_option("menu-progress")
+        else:
+            self.switch_screen(HomeScreen(start_menu_id="menu-progress"))
+
     def action_goto_search(self):
         while len(self.screen_stack) > 2:
             self.pop_screen()
             
         if isinstance(self.screen, HomeScreen):
-            self.screen.query_one("#sidebar-list").highlighted_index = 10  # Szukaj
-            self.screen.current_menu_id = "menu-search"
-            self.screen.query_one("#search-input").display = True
-            self.screen.query_one("#search-input").focus()
-            if hasattr(self, "discord_rpc") and self.discord_rpc:
-                self.discord_rpc.set_status("Przegląda menu", "Wyszukiwanie")
+            self.screen.select_menu_option("menu-search")
         else:
             self.switch_screen(HomeScreen(start_search=True))
 

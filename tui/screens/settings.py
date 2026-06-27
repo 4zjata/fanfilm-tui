@@ -56,6 +56,13 @@ class SettingsScreen(Screen):
                         ("Włączony (Pokazuj błędy)", "true")
                     ]
                     yield Select(adv_options, id="advanced-select", allow_blank=False)
+                    
+                    yield Label("Typ menu (Menu layout):")
+                    menu_type_options = [
+                        ("Panel boczny (Sidebar)", "sidebar"),
+                        ("Paleta komend (Ctrl+P)", "command_palette")
+                    ]
+                    yield Select(menu_type_options, id="menu-type-select", allow_blank=False)
 
                 with Vertical(id="pane-discord"):
                     yield Label("Włącz Discord RPC (Status aktywności):")
@@ -171,6 +178,9 @@ class SettingsScreen(Screen):
         adv_val = settings.getString("tui.advanced_mode")
         if not adv_val: adv_val = "false"
 
+        menu_type_val = settings.getString("tui.menu_type")
+        if not menu_type_val: menu_type_val = "sidebar"
+
         discord_rpc_enabled = settings.getString("tui.discord_rpc_enabled")
         if not discord_rpc_enabled: discord_rpc_enabled = "true"
 
@@ -225,6 +235,7 @@ class SettingsScreen(Screen):
         self.query_one("#poster-select", Select).value = poster_val
         self.query_one("#theme-select", Select).value = theme_val
         self.query_one("#advanced-select", Select).value = adv_val
+        self.query_one("#menu-type-select", Select).value = menu_type_val
         self.query_one("#rpc-select", Select).value = discord_rpc_enabled
         self.query_one("#rpc-client-id", Input).value = discord_client_id
         self.query_one("#rpc-menu-select", Select).value = rpc_menu
@@ -256,6 +267,7 @@ class SettingsScreen(Screen):
             poster_val = self.query_one("#poster-select", Select).value
             theme_val = self.query_one("#theme-select", Select).value
             adv_val = self.query_one("#advanced-select", Select).value
+            menu_type_val = self.query_one("#menu-type-select", Select).value
             rpc_enabled = self.query_one("#rpc-select", Select).value
             rpc_client_id = self.query_one("#rpc-client-id", Input).value
             if not rpc_client_id or not rpc_client_id.strip():
@@ -302,6 +314,7 @@ class SettingsScreen(Screen):
             settings.set("tui.poster.type", poster_val)
             settings.set("tui.theme", theme_val)
             settings.set("tui.advanced_mode", adv_val)
+            settings.set("tui.menu_type", menu_type_val)
             settings.set("tui.discord_rpc_enabled", rpc_enabled)
             settings.set("tui.discord_client_id", rpc_client_id)
             settings.set("tui.discord_show_menu", rpc_menu)
